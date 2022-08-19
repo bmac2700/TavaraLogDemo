@@ -8,6 +8,7 @@ use mysql::prelude::*;
 use mysql::*;
 
 use crate::{
+    configuration_file::read_configuration,
     scanner::{ScanEvent, TagInfo},
     views::{
         main_view::{get_object_info, get_student_info},
@@ -19,7 +20,7 @@ pub fn launch() -> iced::Result {
     MainView::run(Settings::default())
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq)]
 pub enum MenuState {
     Main,
     Settings,
@@ -47,7 +48,7 @@ pub fn is_object_borrowed(id: i64, mut conn: PooledConn) -> (bool, Option<i64>, 
     let objects = conn
         .query_map(
             format!(
-                r"SELECT * FROM itemstorage.borrow_history where object_id={} and borrow_end_timestamp is null and student_id is not null and object_id is not null LIMIT 1;",
+                r"SELECT * FROM borrow_history where object_id={} and borrow_end_timestamp is null and student_id is not null and object_id is not null LIMIT 1;",
                 id
             ),
             |(id, student_id, object_id, borrow_start_timestamp, borrow_end_timestamp)| BorrowHistoryObject {
@@ -149,14 +150,14 @@ impl Application for MainView {
     type Flags = ();
 
     fn new(_flags: ()) -> (Self, Command<Message>) {
-        let url = "mysql://root:qwe321.@localhost:3306/itemstorage";
+        let url: &str = &read_configuration("./config.toml").unwrap().database_url;
         let pool = Pool::new(url).unwrap();
 
         {
             let mut conn = pool.get_conn().unwrap();
 
             conn.exec_drop(
-                r"CREATE TABLE IF NOT EXISTS itemstorage.students (
+                r"CREATE TABLE IF NOT EXISTS students (
                 id BIGINT auto_increment NULL,
                 first_name TEXT NULL,
                 last_name TEXT NULL,
@@ -173,7 +174,7 @@ impl Application for MainView {
             .unwrap();
 
             conn.exec_drop(
-                r"CREATE TABLE IF NOT EXISTS itemstorage.objects (
+                r"CREATE TABLE IF NOT EXISTS objects (
                 id BIGINT auto_increment NULL,
                 name TEXT NULL,
                 uid_length INT NULL,
@@ -187,15 +188,15 @@ impl Application for MainView {
             )
             .unwrap();
 
-            conn.exec_drop(r"CREATE TABLE IF NOT EXISTS itemstorage.borrow_history (
+            conn.exec_drop(r"CREATE TABLE IF NOT EXISTS borrow_history (
                 id BIGINT auto_increment NULL,
                 student_id BIGINT NULL,
                 object_id BIGINT NULL,
                 borrow_start_timestamp BIGINT NULL,
                 borrow_end_timestamp BIGINT NULL,
                 CONSTRAINT borrow_history_pk PRIMARY KEY (id),
-                CONSTRAINT borrow_history_FK FOREIGN KEY (student_id) REFERENCES itemstorage.students(id) ON DELETE SET NULL,
-                CONSTRAINT borrow_history_FK_1 FOREIGN KEY (object_id) REFERENCES itemstorage.objects(id) ON DELETE SET NULL
+                CONSTRAINT borrow_history_FK FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE SET NULL,
+                CONSTRAINT borrow_history_FK_1 FOREIGN KEY (object_id) REFERENCES objects(id) ON DELETE SET NULL
             )
             ENGINE=InnoDB
             DEFAULT CHARSET=latin1
@@ -294,11 +295,8 @@ impl Application for MainView {
                 let object_info = get_object_info(id, &mut conn);
 
                 if object_info.is_some() {
-                    conn.exec_drop(
-                        r"DELETE FROM itemstorage.objects where id=:id",
-                        params! {"id" => id},
-                    )
-                    .unwrap();
+                    conn.exec_drop(r"DELETE FROM objects where id=:id", params! {"id" => id})
+                        .unwrap();
                     println!("Removed object {}", id);
 
                     self.menu_state = MenuState::Settings;
@@ -329,11 +327,8 @@ impl Application for MainView {
                 let student_info = get_student_info(id, &mut conn);
 
                 if student_info.is_some() {
-                    conn.exec_drop(
-                        r"DELETE FROM itemstorage.students where id=:id",
-                        params! {"id" => id},
-                    )
-                    .unwrap();
+                    conn.exec_drop(r"DELETE FROM students where id=:id", params! {"id" => id})
+                        .unwrap();
                     println!("Removed student {}", id);
 
                     self.menu_state = MenuState::Settings;
@@ -384,7 +379,7 @@ impl Application for MainView {
                     println!("{} | {}", self.object_name_value, tag_hash);
                     let mut conn = self.database_pool.get_conn().unwrap();
                     conn.exec_drop(
-                        "INSERT INTO itemstorage.objects
+                        "INSERT INTO objects
                         (name, uid_length, uid)
                         VALUES(:name, :uid_length, :uid);
                         ",
@@ -423,7 +418,7 @@ impl Application for MainView {
                     );
                     let mut conn = self.database_pool.get_conn().unwrap();
                     conn.exec_drop(
-                        "INSERT INTO itemstorage.students
+                        "INSERT INTO students
                     (first_name, last_name, uid_length, uid, admin)
                     VALUES(:first_name, :last_name, :uid_length, :uid, false);
                     ",
@@ -485,10 +480,7 @@ impl Application for MainView {
                         //Ei ole hyvä tapa, mahdollinen sql injection, mutta todella epätodennäköinen sillä tagin uid pitäisi olla tekstiä, mutta jos se olisi aika varmasti arduino luulee sitä vialliseksi eikä lähetä sitä
                         let objects = conn
                             .query_map(
-                                format!(
-                                    r"SELECT * FROM itemstorage.objects where uid={} LIMIT 1;",
-                                    val
-                                ),
+                                format!(r"SELECT * FROM objects where uid={} LIMIT 1;", val),
                                 |(id, name, uid_length, uid)| Object {
                                     id,
                                     name,
@@ -511,7 +503,7 @@ impl Application for MainView {
                                     if is_borrowed.2.unwrap() + 10 <= chrono::Utc::now().timestamp()
                                     {
                                         self.menu_state = MenuState::ObjectReturn;
-                                        conn.exec_drop(r"UPDATE itemstorage.borrow_history SET borrow_end_timestamp=:borrow_end_timestamp WHERE id=:id;", params!{
+                                        conn.exec_drop(r"UPDATE borrow_history SET borrow_end_timestamp=:borrow_end_timestamp WHERE id=:id;", params!{
                                         "id" => is_borrowed.1.unwrap(),
                                         "borrow_end_timestamp" => chrono::Utc::now().timestamp(),
                                     }).unwrap()
@@ -533,10 +525,7 @@ impl Application for MainView {
                         //Ei ole hyvä tapa, mahdollinen sql injection, mutta todella epätodennäköinen sillä tagin uid pitäisi olla tekstiä, mutta jos se olisi aika varmasti arduino luulee sitä vialliseksi eikä lähetä sitä
                         let students = conn
                             .query_map(
-                                format!(
-                                    r"SELECT * FROM itemstorage.students where uid={} LIMIT 1;",
-                                    val
-                                ),
+                                format!(r"SELECT * FROM students where uid={} LIMIT 1;", val),
                                 |(id, first_name, last_name, uid_length, uid, admin)| Student {
                                     id,
                                     first_name,

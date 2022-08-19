@@ -9,9 +9,11 @@ use mysql::*;
 use super::tagfound_view::{Object, Student};
 
 fn get_students(conn: &mut PooledConn) -> Vec<Student> {
-    let students = conn
+    
+
+    conn
         .query_map(
-            r"SELECT * FROM itemstorage.students;",
+            r"SELECT * FROM students;",
             |(id, first_name, last_name, uid_length, uid, admin)| Student {
                 id,
                 first_name,
@@ -21,25 +23,22 @@ fn get_students(conn: &mut PooledConn) -> Vec<Student> {
                 admin,
             },
         )
-        .unwrap();
-
-    students
+        .unwrap()
 }
 
 fn get_objects(conn: &mut PooledConn) -> Vec<Object> {
-    let objects = conn
-        .query_map(
-            r"SELECT * FROM itemstorage.objects;",
-            |(id, name, uid_length, uid)| Object {
+    
+
+    conn
+        .query_map(r"SELECT * FROM objects;", |(id, name, uid_length, uid)| {
+            Object {
                 id,
                 name,
                 uid_length,
                 uid,
-            },
-        )
-        .unwrap();
-
-    objects
+            }
+        })
+        .unwrap()
 }
 
 pub fn get_view(owner: &mut MainView) -> Column<Message> {
@@ -123,7 +122,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
         let row: iced::Row<Message> = iced::Row::new()
             .push(Text::new(format!("{}", x.id)))
             .push(Space::with_width(Length::FillPortion(25)))
-            .push(Text::new(format!("{}", x.name)))
+            .push(Text::new(x.name.to_string()))
             .push(Space::with_width(Length::FillPortion(25)))
             .push(Text::new(format!("{}", x.uid)));
         //.push(Button::new(&mut owner.add_object_button, Text::new("Epic")).on_press(Message::EditStudent(x.id)));

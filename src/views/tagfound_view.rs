@@ -31,10 +31,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
 
     //Ei ole hyvä tapa, mahdollinen sql injection, mutta todella epätodennäköinen sillä tagin uid pitäisi olla tekstiä, mutta jos se olisi aika varmasti arduino luulee sitä vialliseksi eikä lähetä sitä
     let students = conn.query_map(
-        format!(
-            r"SELECT * FROM itemstorage.students where uid={} LIMIT 1;",
-            student_uid
-        ),
+        format!(r"SELECT * FROM students where uid={} LIMIT 1;", student_uid),
         |(id, first_name, last_name, uid_length, uid, admin)| Student {
             id,
             first_name,
@@ -54,10 +51,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
         let object_uid = i64::from_be_bytes(object_tag.uid);
 
         let objects = conn.query_map(
-            format!(
-                r"SELECT * FROM itemstorage.objects where uid={} LIMIT 1;",
-                object_uid
-            ),
+            format!(r"SELECT * FROM objects where uid={} LIMIT 1;", object_uid),
             |(id, name, uid_length, uid)| Object {
                 id,
                 name,
@@ -83,7 +77,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
 
     if object.is_some() {
         conn.exec_drop(
-            r"INSERT INTO itemstorage.borrow_history
+            r"INSERT INTO borrow_history
         (student_id, object_id, borrow_start_timestamp, borrow_end_timestamp)
         VALUES(:student_id, :object_id, :borrow_start_timestamp, NULL);
         ",

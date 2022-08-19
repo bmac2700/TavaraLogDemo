@@ -1,3 +1,4 @@
 15/08/2022 - Yhdistin ohjelmiston SQL pohjaiseen tietokantaan ja samalla lisäsin tavaroiden lainaamis ja palautus järjestelmän.
-16/08/2022 - Lisäsin ohjelmistoon lainaus listan, oppilas listan ja oppilaiden ja esineiden lisäämis järjestelmän
-18/08/2022 - Lisäsin ohjelmistoon tarkustuksia, jotka estävät avaimien uudelleen käytön
+16/08/2022 - Lisäsin ohjelmistoon lainaus listan, oppilas listan ja oppilaiden ja esineiden lisäämis järjestelmän.
+17/08/2022 - Lisäsin ohjelmistoon tarkustuksia, jotka estävät avaimien uudelleen käytön.
+19/08/2022 - Lisäsin ohjelmistoon konfiguraatio tiedoston tietokantaa varten.

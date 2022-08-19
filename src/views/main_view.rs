@@ -9,10 +9,7 @@ use super::tagfound_view::{Object, Student};
 pub fn get_student_info(id: i64, conn: &mut PooledConn) -> Option<Student> {
     let students = conn
         .query_map(
-            format!(
-                r"SELECT * FROM itemstorage.students where id={} LIMIT 1;",
-                id
-            ),
+            format!(r"SELECT * FROM students where id={} LIMIT 1;", id),
             |(id, first_name, last_name, uid_length, uid, admin)| Student {
                 id,
                 first_name,
@@ -34,10 +31,7 @@ pub fn get_student_info(id: i64, conn: &mut PooledConn) -> Option<Student> {
 pub fn get_object_info(id: i64, conn: &mut PooledConn) -> Option<Object> {
     let objects = conn
         .query_map(
-            format!(
-                r"SELECT * FROM itemstorage.objects where id={} LIMIT 1;",
-                id
-            ),
+            format!(r"SELECT * FROM objects where id={} LIMIT 1;", id),
             |(id, name, uid_length, uid)| Object {
                 id,
                 name,
@@ -66,7 +60,7 @@ fn get_borrowed_items(conn: &mut PooledConn) -> Vec<BorrowInfo> {
 
     let borrows = conn
         .query_map(
-                r"SELECT * FROM itemstorage.borrow_history where borrow_end_timestamp is null and student_id is not null and object_id is not null;",
+                r"SELECT * FROM borrow_history where borrow_end_timestamp is null and student_id is not null and object_id is not null;",
             |(id, student_id, object_id, borrow_start_timestamp, borrow_end_timestamp)| BorrowHistoryObject {
                 id,
                 student_id,

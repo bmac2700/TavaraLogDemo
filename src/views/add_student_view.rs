@@ -1,33 +1,28 @@
 use iced::{Alignment, Button, Column, Length, Space, Text, TextInput};
 
 use crate::main_window::{MainView, Message};
-use mysql::*;
 use mysql::prelude::*;
+use mysql::*;
 
 use super::add_object_view::is_object_uid_in_use;
 use super::tagfound_view::Student;
 
 pub fn is_student_uid_in_use(uid: i64, conn: &mut PooledConn) -> bool {
-    let students = conn.query_map(
-        format!(
-            r"SELECT * FROM itemstorage.students where uid={} LIMIT 1;",
-            uid
-        ),
-        |(id, first_name, last_name, uid_length, uid, admin)| Student {
-            id,
-            first_name,
-            last_name,
-            uid_length,
-            uid,
-            admin,
-        },
-    ).unwrap();
+    let students = conn
+        .query_map(
+            format!(r"SELECT * FROM students where uid={} LIMIT 1;", uid),
+            |(id, first_name, last_name, uid_length, uid, admin)| Student {
+                id,
+                first_name,
+                last_name,
+                uid_length,
+                uid,
+                admin,
+            },
+        )
+        .unwrap();
 
-    if students.len() == 1 {
-        true
-    }else{
-        false
-    }
+    students.len() == 1
 }
 
 pub fn get_view(owner: &mut MainView) -> Column<Message> {
@@ -62,12 +57,17 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
     let mut add_student_button =
         Button::new(&mut owner.add_student_button, Text::new("Lisää oppilas")).padding([10, 20]);
 
-    
     let mut uid_in_use = false;
 
     if owner.new_tag.is_some() {
         let mut conn = owner.database_pool.get_conn().unwrap();
-        uid_in_use = is_object_uid_in_use(i64::from_be_bytes(owner.new_tag.clone().unwrap().uid), &mut conn) || is_student_uid_in_use(i64::from_be_bytes(owner.new_tag.clone().unwrap().uid), &mut conn);
+        uid_in_use = is_object_uid_in_use(
+            i64::from_be_bytes(owner.new_tag.clone().unwrap().uid),
+            &mut conn,
+        ) || is_student_uid_in_use(
+            i64::from_be_bytes(owner.new_tag.clone().unwrap().uid),
+            &mut conn,
+        );
     }
 
     if owner.new_tag.is_some()

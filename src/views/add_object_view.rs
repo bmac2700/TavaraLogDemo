@@ -2,31 +2,26 @@ use iced::{Alignment, Button, Column, Length, Space, Text, TextInput};
 
 use crate::main_window::{MainView, Message};
 
-use mysql::*;
 use mysql::prelude::*;
+use mysql::*;
 
 use super::add_student_view::is_student_uid_in_use;
 use super::tagfound_view::Object;
 
 pub fn is_object_uid_in_use(uid: i64, conn: &mut PooledConn) -> bool {
-    let objects = conn.query_map(
-        format!(
-            r"SELECT * FROM itemstorage.objects where uid={} LIMIT 1;",
-            uid
-        ),
-        |(id, name, uid_length, uid)| Object {
-            id,
-            name,
-            uid_length,
-            uid,
-        },
-    ).unwrap();
+    let objects = conn
+        .query_map(
+            format!(r"SELECT * FROM objects where uid={} LIMIT 1;", uid),
+            |(id, name, uid_length, uid)| Object {
+                id,
+                name,
+                uid_length,
+                uid,
+            },
+        )
+        .unwrap();
 
-    if objects.len() == 1 {
-        true
-    }else{
-        false
-    }
+    objects.len() == 1
 }
 
 pub fn get_view(owner: &mut MainView) -> Column<Message> {
@@ -52,7 +47,13 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
 
     if owner.new_tag.is_some() {
         let mut conn = owner.database_pool.get_conn().unwrap();
-        uid_in_use = is_object_uid_in_use(i64::from_be_bytes(owner.new_tag.clone().unwrap().uid), &mut conn) || is_student_uid_in_use(i64::from_be_bytes(owner.new_tag.clone().unwrap().uid), &mut conn);
+        uid_in_use = is_object_uid_in_use(
+            i64::from_be_bytes(owner.new_tag.clone().unwrap().uid),
+            &mut conn,
+        ) || is_student_uid_in_use(
+            i64::from_be_bytes(owner.new_tag.clone().unwrap().uid),
+            &mut conn,
+        );
     }
 
     if uid_in_use {

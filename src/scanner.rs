@@ -2,7 +2,7 @@ use std::io::ErrorKind;
 
 use iced::Subscription;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct TagInfo {
     pub uid_length: u8,
     pub uid: [u8; 8],
