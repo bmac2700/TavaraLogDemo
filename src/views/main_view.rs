@@ -119,6 +119,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
         .width(iced::Length::Units(350));
 
     let content = Column::new()
+        .push(Text::new("Työkalujen lainaus järjestelmä").size(16))
         .push(Space::with_height(Length::FillPortion(1)))
         .push(scan_message)
         .push(Space::with_height(Length::Units(50)))
