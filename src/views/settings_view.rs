@@ -42,8 +42,8 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
 
     let mut show_settings = false;
 
-    if owner.new_tag.is_some() {
-        let tag = owner.new_tag.clone().unwrap();
+    if owner.teacher_tag.is_some() {
+        let tag = owner.teacher_tag.clone().unwrap();
 
         let students = conn
             .query_map(

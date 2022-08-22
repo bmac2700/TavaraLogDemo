@@ -83,6 +83,7 @@ pub struct MainView {
     pub last_scanned_student_tag: Option<TagInfo>,
     pub last_scanned_object_tag: Option<TagInfo>,
     pub new_tag: Option<TagInfo>,
+    pub teacher_tag: Option<TagInfo>,
 
     pub selected_device: Option<String>,
 
@@ -244,6 +245,7 @@ impl Application for MainView {
                 object_list: scrollable::State::default(),
                 history_button: button::State::default(),
                 borrow_history: scrollable::State::default(),
+                teacher_tag: None,
             },
             Command::none(),
         )
@@ -379,6 +381,7 @@ impl Application for MainView {
                     self.menu_state = MenuState::Settings;
                 } else {
                     self.menu_state = MenuState::Main;
+                    self.teacher_tag = None;
                     self.new_tag = None;
                 }
             }
@@ -490,9 +493,13 @@ impl Application for MainView {
 
                     if self.menu_state == MenuState::AddStudent
                         || self.menu_state == MenuState::AddObject
-                        || self.menu_state == MenuState::Settings
                     {
                         self.new_tag = Some(tag);
+                        return Command::none();
+                    }
+
+                    if self.menu_state == MenuState::Settings {
+                        self.teacher_tag = Some(tag);
                         return Command::none();
                     }
 
