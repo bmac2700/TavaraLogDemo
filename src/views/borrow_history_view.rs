@@ -5,7 +5,6 @@ use iced::{Button, Scrollable};
 use crate::main_window::{BorrowHistoryObject, MainView, Message};
 
 use mysql::prelude::*;
-use mysql::*;
 
 use super::main_view::{get_object_info, get_student_info};
 
