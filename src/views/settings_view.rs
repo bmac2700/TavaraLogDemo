@@ -9,40 +9,84 @@ use mysql::*;
 use super::tagfound_view::{Object, Student};
 
 fn get_students(conn: &mut PooledConn) -> Vec<Student> {
-    
-
-    conn
-        .query_map(
-            r"SELECT * FROM students;",
-            |(id, first_name, last_name, uid_length, uid, admin)| Student {
-                id,
-                first_name,
-                last_name,
-                uid_length,
-                uid,
-                admin,
-            },
-        )
-        .unwrap()
+    conn.query_map(
+        r"SELECT * FROM students;",
+        |(id, first_name, last_name, uid_length, uid, admin)| Student {
+            id,
+            first_name,
+            last_name,
+            uid_length,
+            uid,
+            admin,
+        },
+    )
+    .unwrap()
 }
 
 fn get_objects(conn: &mut PooledConn) -> Vec<Object> {
-    
-
-    conn
-        .query_map(r"SELECT * FROM objects;", |(id, name, uid_length, uid)| {
-            Object {
-                id,
-                name,
-                uid_length,
-                uid,
-            }
-        })
-        .unwrap()
+    conn.query_map(r"SELECT * FROM objects;", |(id, name, uid_length, uid)| {
+        Object {
+            id,
+            name,
+            uid_length,
+            uid,
+        }
+    })
+    .unwrap()
 }
 
 pub fn get_view(owner: &mut MainView) -> Column<Message> {
     let mut devices: Vec<String> = Vec::new();
+
+    let mut conn = owner.database_pool.get_conn().unwrap();
+
+    let mut show_settings = false;
+
+    if owner.new_tag.is_some() {
+        let tag = owner.new_tag.clone().unwrap();
+
+        let students = conn
+            .query_map(
+                format!(
+                    r"SELECT * FROM students where uid={} LIMIT 1;",
+                    i64::from_be_bytes(tag.uid)
+                ),
+                |(id, first_name, last_name, uid_length, uid, admin)| Student {
+                    id,
+                    first_name,
+                    last_name,
+                    uid_length,
+                    uid,
+                    admin,
+                },
+            )
+            .unwrap();
+
+        if students.len() == 1 {
+            let student = students[0].clone();
+
+            if student.admin {
+                show_settings = true;
+            }
+        }
+    }
+
+    if !show_settings && !owner.selected_device.is_none() {
+        let settings_button =
+            Button::new(&mut owner.settings_button, Text::new("Poistu asetuksista"))
+                .padding([10, 20])
+                .on_press(Message::SettingsButtonClick);
+
+        let content = Column::new()
+            .push(Space::with_height(Length::FillPortion(1)))
+            .push(Text::new("Skannaa opettajakortti"))
+            .push(Space::with_height(Length::Units(5)))
+            .push(settings_button)
+            .push(Space::with_height(Length::Fill))
+            .align_items(Alignment::Center);
+
+        return content;
+    }
 
     let ports = available_ports().unwrap();
 
@@ -125,7 +169,6 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
             .push(Text::new(x.name.to_string()))
             .push(Space::with_width(Length::FillPortion(25)))
             .push(Text::new(format!("{}", x.uid)));
-        //.push(Button::new(&mut owner.add_object_button, Text::new("Epic")).on_press(Message::EditStudent(x.id)));
 
         scroll_content_objects = scroll_content_objects
             .push(Space::with_height(Length::Units(5)))
@@ -151,6 +194,13 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
             .padding([10, 20])
             .on_press(Message::RemoveObjectViewButton);
 
+    let borrow_history_button = Button::new(
+        &mut owner.history_button,
+        Text::new("Listaa lainaushistoria"),
+    )
+    .padding([10, 20])
+    .on_press(Message::HistoryButtonClick);
+
     let content = Column::new()
         .spacing(10)
         .push(Space::with_width(Length::FillPortion(1)))
@@ -166,6 +216,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
         .push(add_object_view_button)
         .push(remove_object_view_button)
         .push(Space::with_height(Length::Fill))
+        .push(borrow_history_button)
         .push(settings_button)
         .align_items(Alignment::Center);
 

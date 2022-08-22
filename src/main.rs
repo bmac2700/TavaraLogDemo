@@ -1,5 +1,3 @@
-
-
 use crate::configuration_file::{write_configuration, MainConfigurationFile};
 
 mod configuration_file;

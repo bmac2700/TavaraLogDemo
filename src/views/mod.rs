@@ -1,5 +1,6 @@
 pub mod add_object_view;
 pub mod add_student_view;
+pub mod borrow_history_view;
 pub mod cannot_return_object;
 pub mod main_view;
 pub mod object_not_borrowed;

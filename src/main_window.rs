@@ -32,6 +32,7 @@ pub enum MenuState {
     AddObject,
     RemoveStudent,
     RemoveObject,
+    BorrowHistory,
 }
 
 #[derive(Debug, Clone)]
@@ -105,6 +106,7 @@ pub struct MainView {
 
     //Buttons
     pub settings_button: button::State,
+    pub history_button: button::State,
     pub add_student_button: button::State,
     pub add_student_view: button::State,
     pub back_to_mainscreen: button::State,
@@ -120,6 +122,8 @@ pub struct MainView {
     pub borrow_list: scrollable::State,
     pub student_list: scrollable::State,
     pub object_list: scrollable::State,
+
+    pub borrow_history: scrollable::State,
 }
 
 #[derive(Debug, Clone)]
@@ -142,6 +146,7 @@ pub enum Message {
     RemoveStudentButton,
     RemoveObjectViewButton,
     RemoveObjectButton,
+    HistoryButtonClick,
 }
 
 impl Application for MainView {
@@ -237,9 +242,24 @@ impl Application for MainView {
                 remove_object_button: button::State::default(),
                 remove_object_view: button::State::default(),
                 object_list: scrollable::State::default(),
+                history_button: button::State::default(),
+                borrow_history: scrollable::State::default(),
             },
             Command::none(),
         )
+    }
+
+    fn scale_factor(&self) -> f64 {
+        if self.menu_state == MenuState::Main
+            || self.menu_state == MenuState::ObjectReturn
+            || self.menu_state == MenuState::CannotReturnObject
+            || self.menu_state == MenuState::TagFound
+            || self.menu_state == MenuState::ObjectNotBorrowed
+        {
+            return 2f64;
+        }
+
+        return 1f64;
     }
 
     fn subscription(&self) -> iced::Subscription<Self::Message> {
@@ -287,6 +307,9 @@ impl Application for MainView {
 
     fn update(&mut self, message: Message) -> Command<Message> {
         match message {
+            Message::HistoryButtonClick => {
+                self.menu_state = MenuState::BorrowHistory;
+            }
             Message::RemoveObjectButton => {
                 let mut conn = self.database_pool.get_conn().unwrap();
 
@@ -356,6 +379,7 @@ impl Application for MainView {
                     self.menu_state = MenuState::Settings;
                 } else {
                     self.menu_state = MenuState::Main;
+                    self.new_tag = None;
                 }
             }
             Message::AddObjectViewButton => {
@@ -466,6 +490,7 @@ impl Application for MainView {
 
                     if self.menu_state == MenuState::AddStudent
                         || self.menu_state == MenuState::AddObject
+                        || self.menu_state == MenuState::Settings
                     {
                         self.new_tag = Some(tag);
                         return Command::none();
@@ -563,6 +588,8 @@ impl Application for MainView {
                 {
                     self.menu_state = MenuState::Main;
                 }
+
+                if self.menu_state == MenuState::Settings {}
             }
         }
 
@@ -581,6 +608,7 @@ impl Application for MainView {
             MenuState::AddObject => crate::views::add_object_view::get_view(self),
             MenuState::RemoveStudent => crate::views::remove_student_view::get_view(self),
             MenuState::RemoveObject => crate::views::remove_object_view::get_view(self),
+            MenuState::BorrowHistory => crate::views::borrow_history_view::get_view(self),
         };
 
         Container::new(content)

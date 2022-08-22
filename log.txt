@@ -2,3 +2,4 @@
 16/08/2022 - Lisäsin ohjelmistoon lainaus listan, oppilas listan ja oppilaiden ja esineiden lisäämis järjestelmän.
 17/08/2022 - Lisäsin ohjelmistoon tarkustuksia, jotka estävät avaimien uudelleen käytön.
 19/08/2022 - Lisäsin ohjelmistoon konfiguraatio tiedoston tietokantaa varten.
+22/08/2022 - Lisäsin dynaamisen skaalaukset, opettajan tunnistautumis ikkunan ja lainaushistorian.

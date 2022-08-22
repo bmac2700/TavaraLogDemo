@@ -24,11 +24,7 @@ pub fn write_configuration(filename: &str, config: &MainConfigurationFile) -> bo
     let mut file = std::fs::File::create(filename).unwrap();
 
     match file.write(encoded_config.as_bytes()) {
-        Err(_) => {
-            false
-        }
-        Ok(_) => {
-            true
-        }
+        Err(_) => false,
+        Ok(_) => true,
     }
 }
