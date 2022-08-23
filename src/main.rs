@@ -8,17 +8,14 @@ mod views;
 fn main() {
     println!("Hello, world!");
 
-    match configuration_file::read_configuration("./config.toml") {
-        Err(_) => {
-            write_configuration(
-                "./config.toml",
-                &MainConfigurationFile {
-                    database_url: "mysql://root:qwe321.@localhost:3306/itemstorage".into(),
-                    ..Default::default()
-                },
-            );
-        }
-        Ok(_) => {}
+    if let Err(_) = configuration_file::read_configuration("./config.toml") {
+        write_configuration(
+            "./config.toml",
+            &MainConfigurationFile {
+                database_url: "mysql://root:qwe321.@localhost:3306/itemstorage".into(),
+                ..Default::default()
+            },
+        );
     }
 
     main_window::launch().unwrap();

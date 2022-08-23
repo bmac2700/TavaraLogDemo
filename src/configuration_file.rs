@@ -3,6 +3,8 @@ use std::io::Write;
 #[derive(Default, serde::Serialize, serde::Deserialize)]
 pub struct MainConfigurationFile {
     pub database_url: String,
+    pub scanner_port: String,
+    pub scanner_port_name: String,
 }
 
 pub fn read_configuration(filename: &str) -> Result<MainConfigurationFile, std::io::Error> {

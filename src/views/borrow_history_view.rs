@@ -1,5 +1,5 @@
 use chrono::{DateTime, Local, NaiveDateTime, Utc};
-use iced::{Alignment, Column, Length, Space, Text};
+use iced::{Alignment, Column, Length, Space, Text, TextInput};
 use iced::{Button, Scrollable};
 
 use crate::main_window::{BorrowHistoryObject, MainView, Message};
@@ -13,7 +13,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
 
     let borrows = conn
         .query_map(
-                r"SELECT * FROM borrow_history where borrow_end_timestamp is not null and student_id is not null and object_id is not null;",
+                r"SELECT * FROM borrow_history where borrow_end_timestamp is not null and student_id is not null and object_id is not null order by borrow_end_timestamp desc;",
             |(id, student_id, object_id, borrow_start_timestamp, borrow_end_timestamp)| BorrowHistoryObject {
                 id,
                 student_id,
@@ -24,8 +24,19 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
         )
         .unwrap();
 
+    let student_search_input = TextInput::new(
+        &mut owner.student_search_input,
+        "Lainaaja",
+        &owner.student_search_value,
+        Message::StudentSearchChanged,
+    )
+    //.padding(15)
+    .size(28)
+    .width(iced::Length::Units(100));
+
     let first_row_history: iced::Row<Message> = iced::Row::new()
-        .push(Text::new("Lainaaja").size(28))
+        //.push(Text::new("Lainaaja").size(28))
+        .push(student_search_input)
         .push(Space::with_width(Length::FillPortion(3)))
         .push(Text::new("Esine").size(28))
         .push(Space::with_width(Length::FillPortion(3)))
@@ -39,15 +50,27 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
         let object = get_object_info(x.object_id, &mut conn).unwrap();
         let student = get_student_info(x.student_id, &mut conn).unwrap();
 
+        //Filters
+
+        if !owner.student_search_value.is_empty()
+            && !format!("{} {}", student.first_name, student.last_name)
+                .to_lowercase()
+                .starts_with(&owner.student_search_value.to_lowercase())
+        {
+            continue;
+        }
+
+        //Filters
+
         let naive = NaiveDateTime::from_timestamp(x.borrow_start_timestamp, 0);
         let borrow_time: DateTime<Utc> = DateTime::from_utc(naive, Utc);
         let borrow_time = borrow_time.with_timezone(&Local);
-        let borrow_time_formatted = borrow_time.format("%Y-%m-%d %H:%M:%S");
+        let borrow_time_formatted = borrow_time.format("%H:%M:%S %d/%m/%Y");
 
         let naive = NaiveDateTime::from_timestamp(x.borrow_end_timestamp.unwrap(), 0);
         let return_time: DateTime<Utc> = DateTime::from_utc(naive, Utc);
         let return_time = return_time.with_timezone(&Local);
-        let return_time_formatted = return_time.format("%Y-%m-%d %H:%M:%S");
+        let return_time_formatted = return_time.format("%H:%M:%S %d/%m/%Y");
 
         let row: iced::Row<Message> = iced::Row::new()
             .push(Text::new(format!(
@@ -55,7 +78,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
                 student.first_name, student.last_name
             )))
             .push(Space::with_width(Length::FillPortion(3)))
-            .push(Text::new(format!("{}", object.name)))
+            .push(Text::new(object.name))
             .push(Space::with_width(Length::FillPortion(3)))
             .push(Text::new(format!("{}", borrow_time_formatted)))
             .push(Space::with_width(Length::FillPortion(3)))

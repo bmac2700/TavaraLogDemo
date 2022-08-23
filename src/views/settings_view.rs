@@ -1,4 +1,4 @@
-use iced::{Alignment, Button, Column, Length, PickList, Scrollable, Space, Text};
+use iced::{Alignment, Button, Column, Length, PickList, Scrollable, Space, Text, TextInput};
 use serialport::available_ports;
 
 use crate::main_window::{MainView, Message};
@@ -71,7 +71,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
         }
     }
 
-    if !show_settings && !owner.selected_device.is_none() {
+    if !show_settings && owner.selected_device.is_some() {
         let settings_button =
             Button::new(&mut owner.settings_button, Text::new("Poistu asetuksista"))
                 .padding([10, 20])
@@ -125,23 +125,43 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
     let students = get_students(&mut owner.database_pool.get_conn().unwrap());
     let objects = get_objects(&mut owner.database_pool.get_conn().unwrap());
 
+    let student_search_input = TextInput::new(
+        &mut owner.student_search_input,
+        "Nimi",
+        &owner.student_search_value,
+        Message::StudentSearchChanged,
+    )
+    //.padding(15)
+    .size(28)
+    .width(iced::Length::Units(100));
+
     let first_row_students: iced::Row<Message> = iced::Row::new()
         .push(Text::new("ID").size(28))
         .push(Space::with_width(Length::FillPortion(25)))
-        .push(Text::new("Nimi").size(28))
+        .push(student_search_input)
         .push(Space::with_width(Length::FillPortion(25)))
         .push(Text::new("UID").size(28))
         .push(Space::with_height(Length::Units(5)));
     let mut scroll_content_students = Column::new().push(first_row_students);
 
-    for x in students {
+    for student in students {
+        if !owner.student_search_value.is_empty()
+            && !format!("{} {}", student.first_name, student.last_name)
+                .to_lowercase()
+                .starts_with(&owner.student_search_value.to_lowercase())
+        {
+            continue;
+        }
+
         let row: iced::Row<Message> = iced::Row::new()
-            .push(Text::new(format!("{}", x.id)))
+            .push(Text::new(format!("{}", student.id)))
             .push(Space::with_width(Length::FillPortion(25)))
-            .push(Text::new(format!("{} {}", x.first_name, x.last_name)))
+            .push(Text::new(format!(
+                "{} {}",
+                student.first_name, student.last_name
+            )))
             .push(Space::with_width(Length::FillPortion(25)))
-            .push(Text::new(format!("{}", x.uid)));
-        //.push(Button::new(&mut owner.add_object_button, Text::new("Epic")).on_press(Message::EditStudent(x.id)));
+            .push(Text::new(format!("{}", student.uid)));
 
         scroll_content_students = scroll_content_students
             .push(Space::with_height(Length::Units(5)))

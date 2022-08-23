@@ -8,7 +8,7 @@ use mysql::prelude::*;
 use mysql::*;
 
 use crate::{
-    configuration_file::read_configuration,
+    configuration_file::{read_configuration, write_configuration},
     scanner::{ScanEvent, TagInfo},
     views::{
         main_view::{get_object_info, get_student_info},
@@ -76,6 +76,8 @@ pub fn is_object_borrowed(id: i64, mut conn: PooledConn) -> (bool, Option<i64>, 
 pub struct MainView {
     pub menu_state: MenuState,
 
+    pub initialized: bool,
+
     pub database_pool: Pool,
 
     pub scanner_channel: Option<std::sync::mpsc::Sender<ScanEvent>>,
@@ -101,6 +103,9 @@ pub struct MainView {
 
     pub object_name_input: text_input::State,
     pub object_name_value: String,
+
+    pub student_search_input: text_input::State,
+    pub student_search_value: String,
 
     //Pick Lists
     pub device_list: pick_list::State<String>,
@@ -148,6 +153,7 @@ pub enum Message {
     RemoveObjectViewButton,
     RemoveObjectButton,
     HistoryButtonClick,
+    StudentSearchChanged(String),
 }
 
 impl Application for MainView {
@@ -212,6 +218,7 @@ impl Application for MainView {
 
         (
             MainView {
+                initialized: false,
                 menu_state: MenuState::Main,
                 database_pool: pool,
                 scanner_channel: None,
@@ -246,6 +253,8 @@ impl Application for MainView {
                 history_button: button::State::default(),
                 borrow_history: scrollable::State::default(),
                 teacher_tag: None,
+                student_search_input: text_input::State::default(),
+                student_search_value: String::default(),
             },
             Command::none(),
         )
@@ -308,9 +317,24 @@ impl Application for MainView {
     }
 
     fn update(&mut self, message: Message) -> Command<Message> {
+        if self.selected_device.is_none() && !self.initialized && self.scanner_channel.is_some() {
+            let config = read_configuration("./config.toml").unwrap();
+
+            if !config.scanner_port.is_empty() {
+                let x = self.scanner_channel.as_ref().unwrap();
+                x.send(ScanEvent::UpdatePort(config.scanner_port)).unwrap();
+                self.selected_device = Some(config.scanner_port_name);
+            }
+
+            self.initialized = true;
+        }
         match message {
+            Message::StudentSearchChanged(x) => {
+                self.student_search_value = x;
+            }
             Message::HistoryButtonClick => {
                 self.menu_state = MenuState::BorrowHistory;
+                self.student_search_value = "".to_string();
             }
             Message::RemoveObjectButton => {
                 let mut conn = self.database_pool.get_conn().unwrap();
@@ -377,6 +401,7 @@ impl Application for MainView {
                 self.student_id_value = real_text;
             }
             Message::SettingsButtonClick => {
+                self.student_search_value = "".to_string();
                 if self.menu_state != MenuState::Settings {
                     self.menu_state = MenuState::Settings;
                 } else {
@@ -395,6 +420,7 @@ impl Application for MainView {
                 self.first_name_value = "".to_string();
                 self.last_name_value = "".to_string();
                 self.object_name_value = "".to_string();
+                self.student_search_value = "".to_string();
                 self.new_tag = None;
                 self.menu_state = MenuState::Settings;
             }
@@ -466,11 +492,23 @@ impl Application for MainView {
                     self.new_tag = None;
                 }
             }
-            Message::DeviceSelected(new_port) => {
-                self.selected_device = Some(new_port.clone());
+            Message::DeviceSelected(pretty_port_name) => {
+                self.selected_device = Some(pretty_port_name.clone());
 
                 //Removes the " - <Device name>" part
-                let new_port = new_port.split(" - ").take(1).collect::<Vec<_>>()[0].to_string();
+
+                let new_port = pretty_port_name
+                    .clone()
+                    .split(" - ")
+                    .take(1)
+                    .collect::<Vec<_>>()[0]
+                    .to_string();
+
+                let mut config = read_configuration("./config.toml").unwrap();
+                config.scanner_port = new_port.clone();
+                config.scanner_port_name = pretty_port_name.clone();
+
+                write_configuration("./config.toml", &config);
 
                 self.scanner_channel
                     .as_mut()

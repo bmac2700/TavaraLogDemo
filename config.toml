@@ -1,1 +1,3 @@
 database_url = 'mysql://root:qwe321.@localhost:3306/itemstorage'
+scanner_port = 'COM3'
+scanner_port_name = 'COM3 - Arduino Uno (COM3)'
