@@ -137,10 +137,12 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
 
     let first_row_students: iced::Row<Message> = iced::Row::new()
         .push(Text::new("ID").size(28))
-        .push(Space::with_width(Length::FillPortion(25)))
+        .push(Space::with_width(Length::FillPortion(3)))
         .push(student_search_input)
-        .push(Space::with_width(Length::FillPortion(25)))
+        .push(Space::with_width(Length::FillPortion(3)))
         .push(Text::new("UID").size(28))
+        .push(Space::with_width(Length::FillPortion(3)))
+        .push(Text::new("Opettaja"))
         .push(Space::with_height(Length::Units(5)));
     let mut scroll_content_students = Column::new().push(first_row_students);
 
@@ -153,15 +155,23 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
             continue;
         }
 
+        let teacher = if student.admin {
+            Text::new("Kyllä")
+        }else {
+            Text::new("Ei")
+        };
+
         let row: iced::Row<Message> = iced::Row::new()
             .push(Text::new(format!("{}", student.id)))
-            .push(Space::with_width(Length::FillPortion(25)))
+            .push(Space::with_width(Length::FillPortion(3)))
             .push(Text::new(format!(
                 "{} {}",
                 student.first_name, student.last_name
             )))
-            .push(Space::with_width(Length::FillPortion(25)))
-            .push(Text::new(format!("{}", student.uid)));
+            .push(Space::with_width(Length::FillPortion(3)))
+            .push(Text::new(format!("{}", student.uid)))
+            .push(Space::with_width(Length::FillPortion(3)))
+            .push(teacher);
 
         scroll_content_students = scroll_content_students
             .push(Space::with_height(Length::Units(5)))

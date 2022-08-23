@@ -13,9 +13,12 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
     .size(30)
     .width(iced::Length::Units(300));
 
-    let remove_student_button =
-        Button::new(&mut owner.remove_object_button, Text::new("Poista objekti"))
-            .on_press(Message::RemoveObjectButton);
+    let mut remove_object_button =
+        Button::new(&mut owner.remove_object_button, Text::new("Poista objekti"));
+
+    if !owner.object_id_value.is_empty() {
+        remove_object_button = remove_object_button.on_press(Message::RemoveObjectButton);
+    }
 
     let back_to_main = Button::new(&mut owner.back_to_mainscreen, Text::new("Peruuta"))
         .padding([10, 20])
@@ -24,7 +27,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
     let content = Column::new()
         .push(Space::with_height(Length::Units(300)))
         .push(object_id_input)
-        .push(remove_student_button)
+        .push(remove_object_button)
         .push(Space::with_height(Length::Units(10)))
         .push(back_to_main)
         .align_items(Alignment::Center);

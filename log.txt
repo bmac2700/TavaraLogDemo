@@ -3,4 +3,4 @@
 17/08/2022 - Lisäsin ohjelmistoon tarkustuksia, jotka estävät avaimien uudelleen käytön.
 19/08/2022 - Lisäsin ohjelmistoon konfiguraatio tiedoston tietokantaa varten.
 22/08/2022 - Lisäsin dynaamisen skaalaukset, opettajan tunnistautumis ikkunan ja lainaushistorian.
-23/08/2022 - Lisäsin ohjelmistoon oppilas haun ja myös asetusten tallentamisen
+23/08/2022 - Lisäsin ohjelmistoon oppilas haun, asetusten tallentamisen ja adminin luonti vaihtoehdon.

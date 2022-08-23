@@ -13,11 +13,14 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
     .size(30)
     .width(iced::Length::Units(300));
 
-    let remove_student_button = Button::new(
+    let mut remove_student_button = Button::new(
         &mut owner.remove_student_button,
         Text::new("Poista oppilas"),
-    )
-    .on_press(Message::RemoveStudentButton);
+    );
+
+    if !owner.student_id_value.is_empty() {
+        remove_student_button = remove_student_button.on_press(Message::RemoveStudentButton);
+    }
 
     let back_to_main = Button::new(&mut owner.back_to_mainscreen, Text::new("Peruuta"))
         .padding([10, 20])

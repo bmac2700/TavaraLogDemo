@@ -115,6 +115,8 @@ pub struct MainView {
     pub history_button: button::State,
     pub add_student_button: button::State,
     pub add_student_view: button::State,
+    pub make_new_student_admin: bool,
+
     pub back_to_mainscreen: button::State,
     pub add_object_button: button::State,
     pub add_object_view: button::State,
@@ -154,6 +156,7 @@ pub enum Message {
     RemoveObjectButton,
     HistoryButtonClick,
     StudentSearchChanged(String),
+    ToggleAdmin(bool),
 }
 
 impl Application for MainView {
@@ -255,6 +258,7 @@ impl Application for MainView {
                 teacher_tag: None,
                 student_search_input: text_input::State::default(),
                 student_search_value: String::default(),
+                make_new_student_admin: false,
             },
             Command::none(),
         )
@@ -329,6 +333,9 @@ impl Application for MainView {
             self.initialized = true;
         }
         match message {
+            Message::ToggleAdmin(val) => {
+                self.make_new_student_admin = val;
+            }
             Message::StudentSearchChanged(x) => {
                 self.student_search_value = x;
             }
@@ -422,6 +429,7 @@ impl Application for MainView {
                 self.object_name_value = "".to_string();
                 self.student_search_value = "".to_string();
                 self.new_tag = None;
+                self.make_new_student_admin = false;
                 self.menu_state = MenuState::Settings;
             }
             Message::AddObjectButton => {
@@ -473,13 +481,14 @@ impl Application for MainView {
                     conn.exec_drop(
                         "INSERT INTO students
                     (first_name, last_name, uid_length, uid, admin)
-                    VALUES(:first_name, :last_name, :uid_length, :uid, false);
+                    VALUES(:first_name, :last_name, :uid_length, :uid, :admin);
                     ",
                         params! {
                             "first_name" => self.first_name_value.clone(),
                             "last_name" => self.last_name_value.clone(),
                             "uid_length" => tag.uid_length,
                             "uid" => tag_hash,
+                            "admin" => self.make_new_student_admin,
                         },
                     )
                     .unwrap();
@@ -490,6 +499,7 @@ impl Application for MainView {
                     self.last_name_value = "".to_string();
                     self.object_name_value = "".to_string();
                     self.new_tag = None;
+                    self.make_new_student_admin = false;
                 }
             }
             Message::DeviceSelected(pretty_port_name) => {
@@ -528,6 +538,10 @@ impl Application for MainView {
                 }
                 ScanEvent::TagScanned(tag) => {
                     println!("{:?} {}", tag, i64::from_be_bytes(tag.uid));
+
+                    if self.menu_state == MenuState::TagFound && self.new_tag.is_some() {
+                        return Command::none();
+                    }
 
                     if self.menu_state == MenuState::AddStudent
                         || self.menu_state == MenuState::AddObject

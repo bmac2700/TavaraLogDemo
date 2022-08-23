@@ -1,4 +1,4 @@
-use iced::{Alignment, Button, Column, Length, Space, Text, TextInput};
+use iced::{Alignment, Button, Column, Length, Space, Text, TextInput, Checkbox, Row};
 
 use crate::main_window::{MainView, Message};
 use mysql::prelude::*;
@@ -86,11 +86,19 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
         .padding([10, 20])
         .on_press(Message::BackToSettings);
 
+    let checkbox = Checkbox::new(
+        owner.make_new_student_admin,
+        "Tee uudesta käyttäjästä opettaja".to_string(),
+        Message::ToggleAdmin,
+    )
+    .width(Length::Fill);
+
     let content = Column::new()
         .spacing(10)
         .push(Space::with_height(Length::FillPortion(25)))
         .push(first_name_input)
         .push(last_name_input)
+        .push(Row::new().push(Space::with_width(Length::FillPortion(1))).push(checkbox).push(Space::with_width(Length::FillPortion(1))))
         .push(message)
         .push(add_student_button)
         .push(Space::with_height(Length::FillPortion(25)))
