@@ -65,12 +65,12 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
 
         if is_object_borrowed(db_object.id, owner.database_pool.get_conn().unwrap()).0 {
             object = None;
-            Text::new("Esine on jo lainattu")
+            Text::new("Työkalu on jo lainattu")
         } else {
             Text::new(format!("Lainattu esine: {:?}", db_object.name))
         }
     } else {
-        Text::new("Skannaa objekti")
+        Text::new("Skannaa työkalu")
     };
 
     let time = chrono::Utc::now();

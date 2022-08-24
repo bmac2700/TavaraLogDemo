@@ -38,7 +38,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
         //.push(Text::new("Lainaaja").size(28))
         .push(student_search_input)
         .push(Space::with_width(Length::FillPortion(3)))
-        .push(Text::new("Esine").size(28))
+        .push(Text::new("Työkalu").size(28))
         .push(Space::with_width(Length::FillPortion(3)))
         .push(Text::new("Lainaus aika").size(28))
         .push(Space::with_width(Length::FillPortion(3)))

@@ -113,12 +113,12 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
     .placeholder("Valitse USB lukija");
 
     let add_student_view_button =
-        Button::new(&mut owner.add_student_view, Text::new("Lisää oppilas"))
+        Button::new(&mut owner.add_student_view, Text::new("Lisää opiskelija"))
             .padding([10, 20])
             .on_press(Message::AddStudentViewButton);
 
     let add_object_view_button =
-        Button::new(&mut owner.add_object_view, Text::new("Lisää objekti"))
+        Button::new(&mut owner.add_object_view, Text::new("Lisää työkalu"))
             .padding([10, 20])
             .on_press(Message::AddObjectViewButton);
 
@@ -186,7 +186,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
     let first_row_objects: iced::Row<Message> = iced::Row::new()
         .push(Text::new("ID").size(28))
         .push(Space::with_width(Length::FillPortion(25)))
-        .push(Text::new("Esine").size(28))
+        .push(Text::new("Työkalu").size(28))
         .push(Space::with_width(Length::FillPortion(25)))
         .push(Text::new("UID").size(28))
         .push(Space::with_height(Length::Units(5)));
@@ -215,12 +215,12 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
         .on_press(Message::SettingsButtonClick);
 
     let remove_student_view_button =
-        Button::new(&mut owner.remove_student_view, Text::new("Poista oppilas"))
+        Button::new(&mut owner.remove_student_view, Text::new("Poista opiskelija"))
             .padding([10, 20])
             .on_press(Message::RemoveStudentViewButton);
 
     let remove_object_view_button =
-        Button::new(&mut owner.remove_object_view, Text::new("Poista objekti"))
+        Button::new(&mut owner.remove_object_view, Text::new("Poista työkalu"))
             .padding([10, 20])
             .on_press(Message::RemoveObjectViewButton);
 

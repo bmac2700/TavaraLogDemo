@@ -27,7 +27,7 @@ pub fn is_object_uid_in_use(uid: i64, conn: &mut PooledConn) -> bool {
 pub fn get_view(owner: &mut MainView) -> Column<Message> {
     let object_name_input = TextInput::new(
         &mut owner.object_name_input,
-        "Objektin nimi",
+        "Työkalun nimi",
         &owner.object_name_value,
         Message::ObjectNameChanged,
     )
@@ -40,7 +40,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
         let uid = i64::from_be_bytes(tag.uid);
         Text::new(format!("UID: {}", uid))
     } else {
-        Text::new("Skannaa objekti").size(25)
+        Text::new("Skannaa työkalu").size(25)
     };
 
     let mut uid_in_use = false;
@@ -61,7 +61,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
     }
 
     let mut add_object_button =
-        Button::new(&mut owner.add_object_button, Text::new("Lisää objekti")).padding([10, 20]);
+        Button::new(&mut owner.add_object_button, Text::new("Lisää työkalu")).padding([10, 20]);
 
     if owner.new_tag.is_some() && !owner.object_name_value.is_empty() && !uid_in_use {
         add_object_button = add_object_button.on_press(Message::AddObjectButton);

@@ -5,7 +5,7 @@ use crate::main_window::{MainView, Message};
 pub fn get_view(owner: &mut MainView) -> Column<Message> {
     let object_id_input = TextInput::new(
         &mut owner.object_id_input,
-        "Objektin ID",
+        "Työkalun ID",
         &owner.object_id_value,
         Message::ObjectIdChanged,
     )
@@ -14,7 +14,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
     .width(iced::Length::Units(300));
 
     let mut remove_object_button =
-        Button::new(&mut owner.remove_object_button, Text::new("Poista objekti"));
+        Button::new(&mut owner.remove_object_button, Text::new("Poista työkalu"));
 
     if !owner.object_id_value.is_empty() {
         remove_object_button = remove_object_button.on_press(Message::RemoveObjectButton);

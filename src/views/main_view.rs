@@ -92,12 +92,12 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
         .padding([10, 20])
         .on_press(Message::SettingsButtonClick);
 
-    let scan_message = Text::new("Skannaa oppilaskortti").size(32);
+    let scan_message = Text::new("Skannaa opiskelijan kortti").size(32);
 
     let first_row: iced::Row<Message> = iced::Row::new()
-        .push(Text::new("Oppilas").size(28))
+        .push(Text::new("Opiskelija").size(28))
         .push(Space::with_width(Length::FillPortion(50)))
-        .push(Text::new("Esine").size(28))
+        .push(Text::new("Työkalu").size(28))
         .push(Space::with_height(Length::Units(5)));
     let mut scroll_content = Column::new().push(first_row);
 
@@ -115,7 +115,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
 
     let borrow_list: Scrollable<Message> = Scrollable::new(&mut owner.borrow_list)
         .push(scroll_content)
-        .height(iced::Length::Units(100))
+        .height(iced::Length::Units(150))
         .width(iced::Length::Units(350));
 
     let content = Column::new()
