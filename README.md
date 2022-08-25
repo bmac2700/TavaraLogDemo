@@ -4,4 +4,4 @@ Parhaat ajan tasalla olevat ohjeet rustin asentamiseen saat sen omilta sivuilta 
 
 Sen jälkeen, kun olet asentanut rust toolchainin aloitat ohjelmiston compilaamisen.
 Jos haluat saada ohjelmistosta kehitysversion auki, silloin suorita komento ```cargo run```.
-Jos haluat compilata ohjelmiston production käyttöön, silloin suorita komento ```cargo build --release```. Ohjelmisto on nyt compilattu käynnistettävään muotoon kyseisen tietokoneen omaan arkkitehtuuriin.
+Jos haluat compilata ohjelmiston production käyttöön, silloin suorita komento ```cargo build --release```. Ohjelmisto on nyt compilattu käynnistettävään muotoon kyseisen tietokoneen omalle arkkitehtuurille.
