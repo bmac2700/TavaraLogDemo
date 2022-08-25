@@ -1,3 +1,10 @@
+//=============================================================================//
+//
+// Tarkoitus: Sisältää työkalun palautus näkymän, joka avautuu kun työkalu palautetaan
+// 
+//
+//=============================================================================//
+
 use iced::{Alignment, Column, Length, Space, Text};
 
 use crate::main_window::{MainView, Message};

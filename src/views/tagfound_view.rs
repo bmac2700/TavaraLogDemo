@@ -1,3 +1,10 @@
+//=============================================================================//
+//
+// Tarkoitus: Tämä on näkymä mikä aukeaa, kun päänäkymässä RFID/NFC tagi skannataan
+// 
+//
+//=============================================================================//
+
 use iced::{Alignment, Column, Length, Space, Text};
 
 use crate::main_window::{is_object_borrowed, MainView, Message};

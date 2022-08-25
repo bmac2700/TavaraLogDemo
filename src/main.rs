@@ -1,3 +1,11 @@
+//=============================================================================//
+//
+// Tarkoitus: Sisältää ensimmäisen funktion joka käynnistyy. Tiedosto sisältää
+// konfiguraatio tiedoston luonnin ja pääikkunan avaamisen.
+// 
+//
+//=============================================================================//
+
 use crate::configuration_file::{write_configuration, MainConfigurationFile};
 
 mod configuration_file;

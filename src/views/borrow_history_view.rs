@@ -1,3 +1,10 @@
+//=============================================================================//
+//
+// Tarkoitus: Sisältää lainaushistoria näkymän
+// 
+//
+//=============================================================================//
+
 use chrono::{DateTime, Local, NaiveDateTime, Utc};
 use iced::{Alignment, Column, Length, Space, Text, TextInput};
 use iced::{Button, Scrollable};

@@ -1,3 +1,10 @@
+//=============================================================================//
+//
+// Tarkoitus: Tämä on opiskelijan poisto näkymä, johonka pääset asetusnäkymässä painamalla "Poista opiskelija"
+// 
+//
+//=============================================================================//
+
 use iced::{Alignment, Column, Length, Space, Text};
 
 use crate::main_window::{MainView, Message};

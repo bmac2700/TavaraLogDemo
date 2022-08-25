@@ -1,3 +1,10 @@
+//=============================================================================//
+//
+// Tarkoitus: Tämä näkymä aukeaa, kun skannaat tunnetun esineen, jota ei ole lainattu
+// 
+//
+//=============================================================================//
+
 use iced::{Alignment, Column, Length, Space, Text};
 
 use crate::main_window::{MainView, Message};

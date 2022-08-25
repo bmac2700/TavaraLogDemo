@@ -1,3 +1,10 @@
+//=============================================================================//
+//
+// Tarkoitus: Tämä on työkalun poisto näkymä, johonka pääset asetus näkymässä painamalla "Poista työkalu"
+// 
+//
+//=============================================================================//
+
 use iced::{Alignment, Button, Column, Length, Space, Text, TextInput};
 
 use crate::main_window::{MainView, Message};

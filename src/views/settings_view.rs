@@ -1,3 +1,10 @@
+//=============================================================================//
+//
+// Tarkoitus: Tämä on asetusnäkymä, johon pääset painamalla "Asetukset" nappia päänäkymässä
+// 
+//
+//=============================================================================//
+
 use iced::{Alignment, Button, Column, Length, PickList, Scrollable, Space, Text, TextInput};
 use serialport::available_ports;
 

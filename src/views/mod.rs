@@ -1,3 +1,10 @@
+//=============================================================================//
+//
+// Tarkoitus: Tämä tiedosto antaa oikeuden main_window.rs tiedostolle, jotta se saa pääsyn muihin näkymä tiedostoihin.
+// 
+//
+//=============================================================================//
+
 pub mod add_object_view;
 pub mod add_student_view;
 pub mod borrow_history_view;

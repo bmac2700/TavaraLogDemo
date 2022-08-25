@@ -1,3 +1,10 @@
+//=============================================================================//
+//
+// Tarkoitus: Sisältää kaikki konfiguraation lukemisen ja kirjoittamisen levylle.
+// 
+//
+//=============================================================================//
+
 use std::io::Write;
 
 #[derive(Default, serde::Serialize, serde::Deserialize)]

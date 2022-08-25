@@ -1,3 +1,10 @@
+//=============================================================================//
+//
+// Tarkoitus: Tämän näkymän kautta lisätään työkaluja, pääset tänne asetuksien kattua
+// 
+//
+//=============================================================================//
+
 use iced::{Alignment, Button, Column, Length, Space, Text, TextInput};
 
 use crate::main_window::{MainView, Message};

@@ -1,3 +1,10 @@
+//=============================================================================//
+//
+// Tarkoitus: Tämä on opiskelijan poisto näkymä, johonka pääset asetus näkymässä painamalla "Poista opiskelija"
+// 
+//
+//=============================================================================//
+
 use iced::{Alignment, Button, Column, Length, Space, Text, TextInput};
 
 use crate::main_window::{MainView, Message};
@@ -15,7 +22,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
 
     let mut remove_student_button = Button::new(
         &mut owner.remove_student_button,
-        Text::new("Poista oppilas"),
+        Text::new("Poista opiskelija"),
     );
 
     if !owner.student_id_value.is_empty() {

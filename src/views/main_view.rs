@@ -1,3 +1,10 @@
+//=============================================================================//
+//
+// Tarkoitus: Tämä tiedosto sisältää itse päänäkymän.
+// 
+//
+//=============================================================================//
+
 use iced::{Button, Column, Length, Scrollable, Space, Text};
 use mysql::prelude::*;
 use mysql::*;
