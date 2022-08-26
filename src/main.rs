@@ -12,6 +12,7 @@ mod configuration_file;
 mod main_window;
 mod scanner;
 mod views;
+mod beep;
 
 fn main() {
     println!("Hello, world!");

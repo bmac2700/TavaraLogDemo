@@ -13,3 +13,4 @@ mysql = "22.2.0"
 chrono = "0.4"
 serde = { version = "1.0", features = ["derive"] }
 toml = "0.5"
+cpal = "0.14.0"
