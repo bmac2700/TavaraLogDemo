@@ -1,7 +1,7 @@
 //=============================================================================//
 //
 // Tarkoitus: Tämä tiedosto sisältää itse päänäkymän.
-// 
+//
 //
 //=============================================================================//
 
@@ -17,10 +17,11 @@ pub fn get_student_info(id: i64, conn: &mut PooledConn) -> Option<Student> {
     let students = conn
         .query_map(
             format!(r"SELECT * FROM students where id={} LIMIT 1;", id),
-            |(id, first_name, last_name, uid_length, uid, admin)| Student {
+            |(id, first_name, last_name, group_tag, uid_length, uid, admin)| Student {
                 id,
                 first_name,
                 last_name,
+                group_tag,
                 uid_length,
                 uid,
                 admin,
@@ -39,9 +40,12 @@ pub fn get_object_info(id: i64, conn: &mut PooledConn) -> Option<Object> {
     let objects = conn
         .query_map(
             format!(r"SELECT * FROM objects where id={} LIMIT 1;", id),
-            |(id, name, uid_length, uid)| Object {
+            |(id, name, part_number, manufacturer, location, uid_length, uid)| Object {
                 id,
                 name,
+                part_number,
+                manufacturer,
+                location,
                 uid_length,
                 uid,
             },
@@ -57,9 +61,8 @@ pub fn get_object_info(id: i64, conn: &mut PooledConn) -> Option<Object> {
 
 #[derive(Debug, Clone)]
 struct BorrowInfo {
-    pub first_name: String,
-    pub last_name: String,
-    pub item_name: String,
+    pub student: Student,
+    pub object: Object,
 }
 
 fn get_borrowed_items(conn: &mut PooledConn) -> Vec<BorrowInfo> {
@@ -83,9 +86,8 @@ fn get_borrowed_items(conn: &mut PooledConn) -> Vec<BorrowInfo> {
         let object = get_object_info(in_borrow_item.object_id, conn).unwrap();
 
         let info = BorrowInfo {
-            first_name: student.first_name,
-            last_name: student.last_name,
-            item_name: object.name,
+            student,
+            object,
         };
 
         borrow_info.push(info);
@@ -102,9 +104,11 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
     let scan_message = Text::new("Skannaa opiskelijan kortti").size(32);
 
     let first_row: iced::Row<Message> = iced::Row::new()
-        .push(Text::new("Opiskelija").size(28))
-        .push(Space::with_width(Length::FillPortion(50)))
-        .push(Text::new("Työkalu").size(28))
+        .push(Text::new("Opiskelija").size(18))
+        .push(Space::with_width(Length::Units(120)))
+        .push(Text::new("Työkalu").size(18))
+        .push(Space::with_width(Length::Units(20)))
+        .push(Text::new("Sijainti").size(18))
         .push(Space::with_height(Length::Units(5)));
     let mut scroll_content = Column::new().push(first_row);
 
@@ -112,9 +116,13 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
 
     for x in borrowed_items {
         let row: iced::Row<Message> = iced::Row::new()
-            .push(Text::new(format!("{} {}", x.first_name, x.last_name)))
-            .push(Space::with_width(Length::FillPortion(50)))
-            .push(Text::new(x.item_name));
+            .push(Space::with_width(Length::Units(5)))
+            .push(Text::new(format!("{}, {}, {}", x.student.last_name, x.student.first_name, x.student.group_tag)).size(16))
+            .push(Space::with_width(Length::Units(33)))
+            .push(Text::new(x.object.name).size(16))
+            .push(Space::with_width(Length::Units(33)))
+            .push(Text::new(x.object.location).size(16));
+
         scroll_content = scroll_content
             .push(Space::with_height(Length::Units(5)))
             .push(row);

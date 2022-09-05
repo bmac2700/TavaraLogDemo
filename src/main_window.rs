@@ -1,10 +1,9 @@
 //=============================================================================//
 //
 // Tarkoitus: Sisältää suurimman osan koko ohjelmiston logiikasta.
-// 
+//
 //
 //=============================================================================//
-
 
 use std::time::Instant;
 
@@ -103,6 +102,18 @@ pub struct MainView {
     pub last_name_input: text_input::State,
     pub last_name_value: String,
 
+    pub group_tag_input: text_input::State,
+    pub group_tag_value: String,
+
+    pub part_number_input: text_input::State,
+    pub part_number_value: String,
+
+    pub manufacturer_input: text_input::State,
+    pub manufacturer_value: String,
+
+    pub location_input: text_input::State,
+    pub location_value: String,
+
     pub student_id_input: text_input::State,
     pub student_id_value: String,
 
@@ -153,6 +164,10 @@ pub enum Message {
     ObjectNameChanged(String),
     StudentIdChanged(String),
     ObjectIdChanged(String),
+    GroupTagChanged(String),
+    PartNumberChanged(String),
+    ManufacturerChanged(String),
+    LocationChanged(String),
     AddStudentViewButton,
     AddStudentButton,
     BackToSettings,
@@ -184,6 +199,7 @@ impl Application for MainView {
                 id BIGINT auto_increment NULL,
                 first_name TEXT NULL,
                 last_name TEXT NULL,
+                group_tag TEXT NULL,
                 uid_length INT NULL,
                 uid BIGINT NULL,
                 admin tinyint(1) DEFAULT NULL,
@@ -200,6 +216,9 @@ impl Application for MainView {
                 r"CREATE TABLE IF NOT EXISTS objects (
                 id BIGINT auto_increment NULL,
                 name TEXT NULL,
+                part_number TEXT NULL,
+                manufacturer TEXT NULL,
+                location TEXT NULL,
                 uid_length INT NULL,
                 uid BIGINT NULL,
                 CONSTRAINT students_pk PRIMARY KEY (id)
@@ -267,6 +286,14 @@ impl Application for MainView {
                 student_search_input: text_input::State::default(),
                 student_search_value: String::default(),
                 make_new_student_admin: false,
+                group_tag_input: text_input::State::default(),
+                group_tag_value: String::default(),
+                manufacturer_input: text_input::State::default(),
+                manufacturer_value: String::default(),
+                part_number_input: text_input::State::default(),
+                part_number_value: String::default(),
+                location_input: text_input::State::default(),
+                location_value: String::default(),
             },
             Command::none(),
         )
@@ -341,6 +368,18 @@ impl Application for MainView {
             self.initialized = true;
         }
         match message {
+            Message::LocationChanged(val) => {
+                self.location_value = val;
+            }
+            Message::PartNumberChanged(val) => {
+                self.part_number_value = val;
+            }
+            Message::ManufacturerChanged(val) => {
+                self.manufacturer_value = val;
+            }
+            Message::GroupTagChanged(val) => {
+                self.group_tag_value = val;
+            }
             Message::ToggleAdmin(val) => {
                 self.make_new_student_admin = val;
             }
@@ -436,6 +475,10 @@ impl Application for MainView {
                 self.last_name_value = "".to_string();
                 self.object_name_value = "".to_string();
                 self.student_search_value = "".to_string();
+                self.part_number_value = "".to_string();
+                self.manufacturer_value = "".to_string();
+                self.location_value = "".to_string();
+                self.group_tag_value = "".to_string();
                 self.new_tag = None;
                 self.make_new_student_admin = false;
                 self.menu_state = MenuState::Settings;
@@ -449,11 +492,14 @@ impl Application for MainView {
                     let mut conn = self.database_pool.get_conn().unwrap();
                     conn.exec_drop(
                         "INSERT INTO objects
-                        (name, uid_length, uid)
-                        VALUES(:name, :uid_length, :uid);
+                        (name, part_number, manufacturer, location, uid_length, uid)
+                        VALUES(:name, :part_number, :manufacturer, :location, :uid_length, :uid);
                         ",
                         params! {
                             "name" => self.object_name_value.clone(),
+                            "part_number" => self.part_number_value.clone(),
+                            "manufacturer" => self.manufacturer_value.clone(),
+                            "location" => self.location_value.clone(),
                             "uid_length" => tag.uid_length,
                             "uid" => tag_hash,
                         },
@@ -465,6 +511,9 @@ impl Application for MainView {
                     self.first_name_value = "".to_string();
                     self.last_name_value = "".to_string();
                     self.object_name_value = "".to_string();
+                    self.part_number_value = "".to_string();
+                    self.manufacturer_value = "".to_string();
+                    self.location_value = "".to_string();
                     self.new_tag = None;
                 }
             }
@@ -488,12 +537,13 @@ impl Application for MainView {
                     let mut conn = self.database_pool.get_conn().unwrap();
                     conn.exec_drop(
                         "INSERT INTO students
-                    (first_name, last_name, uid_length, uid, admin)
-                    VALUES(:first_name, :last_name, :uid_length, :uid, :admin);
+                    (first_name, last_name, group_tag, uid_length, uid, admin)
+                    VALUES(:first_name, :last_name, :group_tag, :uid_length, :uid, :admin);
                     ",
                         params! {
                             "first_name" => self.first_name_value.clone(),
                             "last_name" => self.last_name_value.clone(),
+                            "group_tag" => self.group_tag_value.clone(),
                             "uid_length" => tag.uid_length,
                             "uid" => tag_hash,
                             "admin" => self.make_new_student_admin,
@@ -506,6 +556,7 @@ impl Application for MainView {
                     self.first_name_value = "".to_string();
                     self.last_name_value = "".to_string();
                     self.object_name_value = "".to_string();
+                    self.group_tag_value = "".to_string();
                     self.new_tag = None;
                     self.make_new_student_admin = false;
                 }
@@ -573,9 +624,12 @@ impl Application for MainView {
                         let objects = conn
                             .query_map(
                                 format!(r"SELECT * FROM objects where uid={} LIMIT 1;", val),
-                                |(id, name, uid_length, uid)| Object {
+                                |(id, name, part_number, manufacturer, location, uid_length, uid)| Object {
                                     id,
                                     name,
+                                    part_number,
+                                    manufacturer,
+                                    location,
                                     uid_length,
                                     uid,
                                 },
@@ -618,13 +672,16 @@ impl Application for MainView {
                         let students = conn
                             .query_map(
                                 format!(r"SELECT * FROM students where uid={} LIMIT 1;", val),
-                                |(id, first_name, last_name, uid_length, uid, admin)| Student {
-                                    id,
-                                    first_name,
-                                    last_name,
-                                    uid_length,
-                                    uid,
-                                    admin,
+                                |(id, first_name, last_name, group_tag, uid_length, uid, admin)| {
+                                    Student {
+                                        id,
+                                        first_name,
+                                        last_name,
+                                        group_tag,
+                                        uid_length,
+                                        uid,
+                                        admin,
+                                    }
                                 },
                             )
                             .unwrap();

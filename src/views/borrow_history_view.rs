@@ -1,7 +1,7 @@
 //=============================================================================//
 //
 // Tarkoitus: Sisältää lainaushistoria näkymän
-// 
+//
 //
 //=============================================================================//
 
@@ -81,8 +81,8 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
 
         let row: iced::Row<Message> = iced::Row::new()
             .push(Text::new(format!(
-                "{} {}",
-                student.first_name, student.last_name
+                "{}, {}, {}",
+                student.last_name, student.first_name, student.group_tag
             )))
             .push(Space::with_width(Length::FillPortion(3)))
             .push(Text::new(object.name))

@@ -2,11 +2,11 @@
 //
 // Tarkoitus: Sisältää funktion, jolla saa helposti tehtyä piippauksia
 //
-// 
+//
 //
 //=============================================================================//
 
-use cpal::traits::{HostTrait, DeviceTrait, StreamTrait};
+use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 
 //1250hz ja 200ms on kassakoneen tyylinen ääni
 pub fn beep(hertz: f32, time: std::time::Duration) {
@@ -20,11 +20,15 @@ pub fn beep(hertz: f32, time: std::time::Duration) {
         cpal::SampleFormat::I16 => run::<i16>(&device, &config.into(), hertz, time).unwrap(),
         cpal::SampleFormat::U16 => run::<u16>(&device, &config.into(), hertz, time).unwrap(),
     };
-
 }
 
 #[allow(dead_code)]
-pub fn run<T>(device: &cpal::Device, config: &cpal::StreamConfig, hertz: f32, time: std::time::Duration) -> Result<(), ()>
+pub fn run<T>(
+    device: &cpal::Device,
+    config: &cpal::StreamConfig,
+    hertz: f32,
+    time: std::time::Duration,
+) -> Result<(), ()>
 where
     T: cpal::Sample,
 {
@@ -39,13 +43,15 @@ where
 
     let err_fn = |err| eprintln!("an error occurred on stream: {}", err);
 
-    let stream = device.build_output_stream(
-        config,
-        move |data: &mut [T], _: &cpal::OutputCallbackInfo| {
-            write_data(data, channels, &mut next_value)
-        },
-        err_fn,
-    ).unwrap();
+    let stream = device
+        .build_output_stream(
+            config,
+            move |data: &mut [T], _: &cpal::OutputCallbackInfo| {
+                write_data(data, channels, &mut next_value)
+            },
+            err_fn,
+        )
+        .unwrap();
     stream.play().unwrap();
 
     std::thread::sleep(time);

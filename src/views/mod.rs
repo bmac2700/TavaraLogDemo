@@ -1,7 +1,7 @@
 //=============================================================================//
 //
 // Tarkoitus: Tämä tiedosto antaa oikeuden main_window.rs tiedostolle, jotta se saa pääsyn muihin näkymä tiedostoihin.
-// 
+//
 //
 //=============================================================================//
 

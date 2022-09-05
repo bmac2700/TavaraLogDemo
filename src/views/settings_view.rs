@@ -1,7 +1,7 @@
 //=============================================================================//
 //
 // Tarkoitus: Tämä on asetusnäkymä, johon pääset painamalla "Asetukset" nappia päänäkymässä
-// 
+//
 //
 //=============================================================================//
 
@@ -18,10 +18,11 @@ use super::tagfound_view::{Object, Student};
 fn get_students(conn: &mut PooledConn) -> Vec<Student> {
     conn.query_map(
         r"SELECT * FROM students;",
-        |(id, first_name, last_name, uid_length, uid, admin)| Student {
+        |(id, first_name, last_name, group_tag, uid_length, uid, admin)| Student {
             id,
             first_name,
             last_name,
+            group_tag,
             uid_length,
             uid,
             admin,
@@ -31,10 +32,13 @@ fn get_students(conn: &mut PooledConn) -> Vec<Student> {
 }
 
 fn get_objects(conn: &mut PooledConn) -> Vec<Object> {
-    conn.query_map(r"SELECT * FROM objects;", |(id, name, uid_length, uid)| {
+    conn.query_map(r"SELECT * FROM objects;", |(id, name, part_number, manufacturer, location, uid_length, uid)| {
         Object {
             id,
             name,
+            part_number,
+            manufacturer,
+            location,
             uid_length,
             uid,
         }
@@ -58,10 +62,11 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
                     r"SELECT * FROM students where uid={} LIMIT 1;",
                     i64::from_be_bytes(tag.uid)
                 ),
-                |(id, first_name, last_name, uid_length, uid, admin)| Student {
+                |(id, first_name, last_name, group_tag, uid_length, uid, admin)| Student {
                     id,
                     first_name,
                     last_name,
+                    group_tag,
                     uid_length,
                     uid,
                     admin,
@@ -147,8 +152,6 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
         .push(Space::with_width(Length::FillPortion(3)))
         .push(student_search_input)
         .push(Space::with_width(Length::FillPortion(3)))
-        .push(Text::new("UID").size(28))
-        .push(Space::with_width(Length::FillPortion(3)))
         .push(Text::new("Opettaja"))
         .push(Space::with_height(Length::Units(5)));
     let mut scroll_content_students = Column::new().push(first_row_students);
@@ -164,7 +167,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
 
         let teacher = if student.admin {
             Text::new("Kyllä")
-        }else {
+        } else {
             Text::new("Ei")
         };
 
@@ -175,8 +178,6 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
                 "{} {}",
                 student.first_name, student.last_name
             )))
-            .push(Space::with_width(Length::FillPortion(3)))
-            .push(Text::new(format!("{}", student.uid)))
             .push(Space::with_width(Length::FillPortion(3)))
             .push(teacher);
 
@@ -195,17 +196,25 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
         .push(Space::with_width(Length::FillPortion(25)))
         .push(Text::new("Työkalu").size(28))
         .push(Space::with_width(Length::FillPortion(25)))
-        .push(Text::new("UID").size(28))
+        .push(Text::new("Valmistaja").size(28))
+        .push(Space::with_width(Length::FillPortion(25)))
+        .push(Text::new("Tuotenumero").size(28))
+        .push(Space::with_width(Length::FillPortion(25)))
+        .push(Text::new("Sijainti").size(28))
         .push(Space::with_height(Length::Units(5)));
     let mut scroll_content_objects = Column::new().push(first_row_objects);
 
     for x in objects {
         let row: iced::Row<Message> = iced::Row::new()
             .push(Text::new(format!("{}", x.id)))
-            .push(Space::with_width(Length::FillPortion(25)))
+            .push(Space::with_width(Length::Units(40)))
             .push(Text::new(x.name.to_string()))
-            .push(Space::with_width(Length::FillPortion(25)))
-            .push(Text::new(format!("{}", x.uid)));
+            .push(Space::with_width(Length::FillPortion(20)))
+            .push(Text::new(format!("{}", x.manufacturer)))
+            .push(Space::with_width(Length::FillPortion(20)))
+            .push(Text::new(format!("{}", x.part_number)))
+            .push(Space::with_width(Length::FillPortion(40)))
+            .push(Text::new(format!("{}", x.location)));
 
         scroll_content_objects = scroll_content_objects
             .push(Space::with_height(Length::Units(5)))
@@ -221,10 +230,12 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
         .padding([10, 20])
         .on_press(Message::SettingsButtonClick);
 
-    let remove_student_view_button =
-        Button::new(&mut owner.remove_student_view, Text::new("Poista opiskelija"))
-            .padding([10, 20])
-            .on_press(Message::RemoveStudentViewButton);
+    let remove_student_view_button = Button::new(
+        &mut owner.remove_student_view,
+        Text::new("Poista opiskelija"),
+    )
+    .padding([10, 20])
+    .on_press(Message::RemoveStudentViewButton);
 
     let remove_object_view_button =
         Button::new(&mut owner.remove_object_view, Text::new("Poista työkalu"))

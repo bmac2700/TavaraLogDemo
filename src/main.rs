@@ -2,17 +2,17 @@
 //
 // Tarkoitus: Sisältää ensimmäisen funktion joka käynnistyy. Tiedosto sisältää
 // konfiguraatio tiedoston luonnin ja pääikkunan avaamisen.
-// 
+//
 //
 //=============================================================================//
 
 use crate::configuration_file::{write_configuration, MainConfigurationFile};
 
+mod beep;
 mod configuration_file;
 mod main_window;
 mod scanner;
 mod views;
-mod beep;
 
 fn main() {
     println!("Hello, world!");

@@ -1,7 +1,7 @@
 //=============================================================================//
 //
 // Tarkoitus: Tämä on näkymä mikä aukeaa, kun päänäkymässä RFID/NFC tagi skannataan
-// 
+//
 //
 //=============================================================================//
 
@@ -16,6 +16,7 @@ pub struct Student {
     pub id: i64,
     pub first_name: String,
     pub last_name: String,
+    pub group_tag: String,
     pub uid_length: u8,
     pub uid: i64,
     pub admin: bool,
@@ -25,6 +26,9 @@ pub struct Student {
 pub struct Object {
     pub id: i64,
     pub name: String,
+    pub part_number: String,
+    pub manufacturer: String,
+    pub location: String,
     pub uid_length: u8,
     pub uid: i64,
 }
@@ -39,10 +43,11 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
     //Ei ole hyvä tapa, mahdollinen sql injection, mutta todella epätodennäköinen sillä tagin uid pitäisi olla tekstiä, mutta jos se olisi aika varmasti arduino luulee sitä vialliseksi eikä lähetä sitä
     let students = conn.query_map(
         format!(r"SELECT * FROM students where uid={} LIMIT 1;", student_uid),
-        |(id, first_name, last_name, uid_length, uid, admin)| Student {
+        |(id, first_name, last_name, group_tag, uid_length, uid, admin)| Student {
             id,
             first_name,
             last_name,
+            group_tag,
             uid_length,
             uid,
             admin,
@@ -59,9 +64,12 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
 
         let objects = conn.query_map(
             format!(r"SELECT * FROM objects where uid={} LIMIT 1;", object_uid),
-            |(id, name, uid_length, uid)| Object {
+            |(id, name, part_number, manufacturer, location, uid_length, uid)| Object {
                 id,
                 name,
+                part_number,
+                manufacturer, 
+                location,
                 uid_length,
                 uid,
             },
@@ -77,6 +85,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
             Text::new(format!("Lainattu esine: {:?}", db_object.name))
         }
     } else {
+        std::thread::spawn(|| crate::beep::beep(1250.0, std::time::Duration::from_millis(200)));
         Text::new("Skannaa työkalu")
     };
 

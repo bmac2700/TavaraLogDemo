@@ -1,11 +1,11 @@
 //=============================================================================//
 //
 // Tarkoitus: Tämän näkymän kautta lisätään oppilaita, pääset tänne asetuksien kattua
-// 
+//
 //
 //=============================================================================//
 
-use iced::{Alignment, Button, Column, Length, Space, Text, TextInput, Checkbox, Row};
+use iced::{Alignment, Button, Checkbox, Column, Length, Row, Space, Text, TextInput};
 
 use crate::main_window::{MainView, Message};
 use mysql::prelude::*;
@@ -18,10 +18,11 @@ pub fn is_student_uid_in_use(uid: i64, conn: &mut PooledConn) -> bool {
     let students = conn
         .query_map(
             format!(r"SELECT * FROM students where uid={} LIMIT 1;", uid),
-            |(id, first_name, last_name, uid_length, uid, admin)| Student {
+            |(id, first_name, last_name, group_tag, uid_length, uid, admin)| Student {
                 id,
                 first_name,
                 last_name,
+                group_tag,
                 uid_length,
                 uid,
                 admin,
@@ -48,6 +49,16 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
         "Oppilaan sukunimi",
         &owner.last_name_value,
         Message::LastNameChanged,
+    )
+    .padding(15)
+    .size(30)
+    .width(iced::Length::Units(300));
+
+    let group_tag_input = TextInput::new(
+        &mut owner.group_tag_input,
+        "Ryhmä",
+        &owner.group_tag_value,
+        Message::GroupTagChanged,
     )
     .padding(15)
     .size(30)
@@ -105,7 +116,13 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
         .push(Space::with_height(Length::FillPortion(25)))
         .push(first_name_input)
         .push(last_name_input)
-        .push(Row::new().push(Space::with_width(Length::FillPortion(1))).push(checkbox).push(Space::with_width(Length::FillPortion(1))))
+        .push(group_tag_input)
+        .push(
+            Row::new()
+                .push(Space::with_width(Length::FillPortion(1)))
+                .push(checkbox)
+                .push(Space::with_width(Length::FillPortion(1))),
+        )
         .push(message)
         .push(add_student_button)
         .push(Space::with_height(Length::FillPortion(25)))
