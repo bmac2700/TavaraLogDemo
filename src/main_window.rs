@@ -267,7 +267,9 @@ impl Application for MainView {
 
         let borrow_list_panes = {
             let (mut panes, pane) = pane_grid::State::new(TablePane::new(0));
-            let x = panes.split(pane_grid::Axis::Vertical, &pane, TablePane { id: 2 }).unwrap();
+            let x = panes
+                .split(pane_grid::Axis::Vertical, &pane, TablePane { id: 2 })
+                .unwrap();
             panes.split(pane_grid::Axis::Vertical, &pane, TablePane { id: 1 });
 
             panes.resize(&x.1, 0.65);

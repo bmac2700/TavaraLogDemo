@@ -80,12 +80,20 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
 
         if is_object_borrowed(db_object.id, owner.database_pool.get_conn().unwrap()).0 {
             object = None;
+            std::thread::spawn(|| {
+                crate::beep::beep(600.0, std::time::Duration::from_millis(500));
+            });
             Text::new("Työkalu on jo lainattu")
         } else {
+            std::thread::spawn(|| {
+                crate::beep::beep(1250.0, std::time::Duration::from_millis(100));
+            });
             Text::new(format!("Lainattu esine: {:?}", db_object.name))
         }
     } else {
-        std::thread::spawn(|| crate::beep::beep(1250.0, std::time::Duration::from_millis(200)));
+        std::thread::spawn(|| {
+            crate::beep::beep(1250.0, std::time::Duration::from_millis(100));
+        });
         Text::new("Skannaa työkalu")
     };
 

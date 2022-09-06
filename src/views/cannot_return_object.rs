@@ -10,6 +10,10 @@ use iced::{Alignment, Column, Length, Space, Text};
 use crate::main_window::{MainView, Message};
 
 pub fn get_view(_owner: &mut MainView) -> Column<Message> {
+    std::thread::spawn(|| {
+        crate::beep::beep(600.0, std::time::Duration::from_millis(500));
+    });
+
     let content = Column::new()
         .spacing(10)
         .push(Space::with_height(Length::FillPortion(25)))

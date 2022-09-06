@@ -5,9 +5,9 @@
 //
 //=============================================================================//
 
-use iced::{Button, Column, Length, Scrollable, Space, Text, Container, Color, pane_grid};
-use crate::widgets::style;
 use crate::widgets::spacer::TableSpacer;
+use crate::widgets::style;
+use iced::{pane_grid, Button, Color, Column, Container, Length, Scrollable, Space, Text};
 use mysql::prelude::*;
 use mysql::*;
 
@@ -183,10 +183,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
                     .push(
                         iced::Row::new()
                             .push(Space::with_width(Length::Units(2)))
-                            .push(
-                                Text::new(borrowed_item.object.location)
-                                .size(18),
-                            ),
+                            .push(Text::new(borrowed_item.object.location).size(18)),
                     )
                     .push(TableSpacer::new(1f32, Color::from_rgb(0.75, 0.75, 0.75)));
             }
