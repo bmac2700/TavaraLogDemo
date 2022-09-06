@@ -7,9 +7,10 @@
 
 use std::time::Instant;
 
+use crate::widgets::TablePane;
 use iced::{
-    button, executor, pick_list, scrollable, text_input, Application, Command, Container, Element,
-    Length, Settings,
+    button, executor, pane_grid, pick_list, scrollable, text_input, Application, Command,
+    Container, Element, Length, Settings,
 };
 use mysql::prelude::*;
 use mysql::*;
@@ -151,6 +152,9 @@ pub struct MainView {
     pub object_list: scrollable::State,
 
     pub borrow_history: scrollable::State,
+
+    pub object_list_panes: pane_grid::State<TablePane>,
+    pub borrow_list_panes: pane_grid::State<TablePane>,
 }
 
 #[derive(Debug, Clone)]
@@ -246,6 +250,30 @@ impl Application for MainView {
             ", ()).unwrap();
         }
 
+        let object_list_panes = {
+            let (mut panes, pane) = pane_grid::State::new(TablePane::new(0));
+            let second_pane = panes
+                .split(pane_grid::Axis::Vertical, &pane, TablePane { id: 1 })
+                .unwrap();
+            panes.split(pane_grid::Axis::Vertical, &pane, TablePane { id: 2 });
+            panes.split(
+                pane_grid::Axis::Vertical,
+                &second_pane.0,
+                TablePane { id: 3 },
+            );
+
+            panes
+        };
+
+        let borrow_list_panes = {
+            let (mut panes, pane) = pane_grid::State::new(TablePane::new(0));
+            let x = panes.split(pane_grid::Axis::Vertical, &pane, TablePane { id: 2 }).unwrap();
+            panes.split(pane_grid::Axis::Vertical, &pane, TablePane { id: 1 });
+
+            panes.resize(&x.1, 0.65);
+            panes
+        };
+
         (
             MainView {
                 initialized: false,
@@ -294,6 +322,8 @@ impl Application for MainView {
                 part_number_value: String::default(),
                 location_input: text_input::State::default(),
                 location_value: String::default(),
+                object_list_panes,
+                borrow_list_panes,
             },
             Command::none(),
         )
@@ -624,7 +654,15 @@ impl Application for MainView {
                         let objects = conn
                             .query_map(
                                 format!(r"SELECT * FROM objects where uid={} LIMIT 1;", val),
-                                |(id, name, part_number, manufacturer, location, uid_length, uid)| Object {
+                                |(
+                                    id,
+                                    name,
+                                    part_number,
+                                    manufacturer,
+                                    location,
+                                    uid_length,
+                                    uid,
+                                )| Object {
                                     id,
                                     name,
                                     part_number,

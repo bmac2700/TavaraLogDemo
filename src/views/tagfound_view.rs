@@ -68,7 +68,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
                 id,
                 name,
                 part_number,
-                manufacturer, 
+                manufacturer,
                 location,
                 uid_length,
                 uid,

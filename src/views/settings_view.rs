@@ -5,8 +5,14 @@
 //
 //=============================================================================//
 
-use iced::{Alignment, Button, Column, Length, PickList, Scrollable, Space, Text, TextInput};
+use crate::widgets::spacer::TableSpacer;
+use iced::{
+    pane_grid, Alignment, Button, Color, Column, Container, Length, PickList, Scrollable, Space,
+    Text, TextInput,
+};
 use serialport::available_ports;
+
+use crate::widgets::style;
 
 use crate::main_window::{MainView, Message};
 
@@ -32,8 +38,9 @@ fn get_students(conn: &mut PooledConn) -> Vec<Student> {
 }
 
 fn get_objects(conn: &mut PooledConn) -> Vec<Object> {
-    conn.query_map(r"SELECT * FROM objects;", |(id, name, part_number, manufacturer, location, uid_length, uid)| {
-        Object {
+    conn.query_map(
+        r"SELECT * FROM objects;",
+        |(id, name, part_number, manufacturer, location, uid_length, uid)| Object {
             id,
             name,
             part_number,
@@ -41,8 +48,8 @@ fn get_objects(conn: &mut PooledConn) -> Vec<Object> {
             location,
             uid_length,
             uid,
-        }
-    })
+        },
+    )
     .unwrap()
 }
 
@@ -191,40 +198,124 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
         .height(iced::Length::Units(100))
         .width(iced::Length::Units(500));
     //-------------------------------------------
-    let first_row_objects: iced::Row<Message> = iced::Row::new()
-        .push(Text::new("ID").size(28))
-        .push(Space::with_width(Length::FillPortion(25)))
-        .push(Text::new("Työkalu").size(28))
-        .push(Space::with_width(Length::FillPortion(25)))
-        .push(Text::new("Valmistaja").size(28))
-        .push(Space::with_width(Length::FillPortion(25)))
-        .push(Text::new("Tuotenumero").size(28))
-        .push(Space::with_width(Length::FillPortion(25)))
-        .push(Text::new("Sijainti").size(28))
-        .push(Space::with_height(Length::Units(5)));
-    let mut scroll_content_objects = Column::new().push(first_row_objects);
 
-    for x in objects {
-        let row: iced::Row<Message> = iced::Row::new()
-            .push(Text::new(format!("{}", x.id)))
-            .push(Space::with_width(Length::Units(40)))
-            .push(Text::new(x.name.to_string()))
-            .push(Space::with_width(Length::FillPortion(20)))
-            .push(Text::new(format!("{}", x.manufacturer)))
-            .push(Space::with_width(Length::FillPortion(20)))
-            .push(Text::new(format!("{}", x.part_number)))
-            .push(Space::with_width(Length::FillPortion(40)))
-            .push(Text::new(format!("{}", x.location)));
+    let pane = pane_grid::PaneGrid::new(&mut owner.object_list_panes, |_id, pane| match pane.id {
+        0 => {
+            let mut content: Column<Message> = Column::new()
+                .spacing(5)
+                .push(
+                    iced::Row::new()
+                        .push(Space::with_width(Length::Units(5)))
+                        .push(Text::new("Tuotteen nimi").size(22)),
+                )
+                .push(TableSpacer::new(1f32, Color::BLACK));
 
-        scroll_content_objects = scroll_content_objects
-            .push(Space::with_height(Length::Units(5)))
-            .push(row);
-    }
+            for object in objects.clone() {
+                content = content
+                    .push(
+                        iced::Row::new()
+                            .push(Space::with_width(Length::Units(2)))
+                            .push(Text::new(object.name).size(18)),
+                    )
+                    .push(TableSpacer::new(1f32, Color::from_rgb(0.75, 0.75, 0.75)));
+            }
+
+            let container = Container::new(content)
+                .style(style::Theme::Primary)
+                .width(Length::FillPortion(4));
+
+            container.into()
+        }
+
+        3 => {
+            let mut content: Column<Message> = Column::new()
+                .spacing(5)
+                .push(
+                    iced::Row::new()
+                        .push(Space::with_width(Length::Units(5)))
+                        .push(Text::new("Tuotteen tyyppi/valmistaja").size(22)),
+                )
+                .push(TableSpacer::new(1f32, Color::BLACK));
+
+            for object in objects.clone() {
+                content = content
+                    .push(
+                        iced::Row::new()
+                            .push(Space::with_width(Length::Units(2)))
+                            .push(Text::new(object.manufacturer).size(18)),
+                    )
+                    .push(TableSpacer::new(1f32, Color::from_rgb(0.75, 0.75, 0.75)));
+            }
+
+            let container = Container::new(content)
+                .style(style::Theme::Primary)
+                .width(Length::FillPortion(4));
+
+            container.into()
+        }
+
+        2 => {
+            let mut content: Column<Message> = Column::new()
+                .spacing(5)
+                .push(
+                    iced::Row::new()
+                        .push(Space::with_width(Length::Units(5)))
+                        .push(Text::new("Tuotteen varaosanumero").size(22)),
+                )
+                .push(TableSpacer::new(1f32, Color::BLACK));
+
+            for object in objects.clone() {
+                content = content
+                    .push(
+                        iced::Row::new()
+                            .push(Space::with_width(Length::Units(2)))
+                            .push(Text::new(object.part_number).size(18)),
+                    )
+                    .push(TableSpacer::new(1f32, Color::from_rgb(0.75, 0.75, 0.75)));
+            }
+
+            let container = Container::new(content)
+                .style(style::Theme::Primary)
+                .width(Length::FillPortion(4));
+
+            container.into()
+        }
+
+        1 => {
+            let mut content: Column<Message> = Column::new()
+                .spacing(5)
+                .push(
+                    iced::Row::new()
+                        .push(Space::with_width(Length::Units(5)))
+                        .push(Text::new("Sijainti/työpöytä/varasto").size(22)),
+                )
+                .push(TableSpacer::new(1f32, Color::BLACK));
+
+            for object in objects.clone() {
+                content = content
+                    .push(
+                        iced::Row::new()
+                            .push(Space::with_width(Length::Units(2)))
+                            .push(Text::new(object.location).size(18)),
+                    )
+                    .push(TableSpacer::new(1f32, Color::from_rgb(0.75, 0.75, 0.75)));
+            }
+
+            let container = Container::new(content)
+                .style(style::Theme::Primary)
+                .width(Length::FillPortion(4));
+
+            container.into()
+        }
+
+        _ => pane_grid::Content::new(Text::new("Jotakin meni pieleen")),
+    })
+    .height(Length::Units((objects.len() * 30) as u16 + 30));
 
     let object_list: Scrollable<Message> = Scrollable::new(&mut owner.object_list)
-        .push(scroll_content_objects)
-        .height(iced::Length::Units(100))
-        .width(iced::Length::Units(500));
+        .push(pane)
+        .height(iced::Length::Units(150))
+        .width(iced::Length::Units(1000));
 
     let settings_button = Button::new(&mut owner.settings_button, Text::new("Poistu asetuksista"))
         .padding([10, 20])
@@ -258,7 +349,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
         .push(Space::with_height(Length::Units(5)))
         .push(add_student_view_button)
         .push(remove_student_view_button)
-        .push(Space::with_height(Length::FillPortion(3)))
+        .push(Space::with_height(Length::Units(30)))
         .push(object_list)
         .push(Space::with_height(Length::Units(5)))
         .push(add_object_view_button)

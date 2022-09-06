@@ -5,7 +5,9 @@
 //
 //=============================================================================//
 
-use iced::{Button, Column, Length, Scrollable, Space, Text};
+use iced::{Button, Column, Length, Scrollable, Space, Text, Container, Color, pane_grid};
+use crate::widgets::style;
+use crate::widgets::spacer::TableSpacer;
 use mysql::prelude::*;
 use mysql::*;
 
@@ -85,10 +87,7 @@ fn get_borrowed_items(conn: &mut PooledConn) -> Vec<BorrowInfo> {
         let student = get_student_info(in_borrow_item.student_id, conn).unwrap();
         let object = get_object_info(in_borrow_item.object_id, conn).unwrap();
 
-        let info = BorrowInfo {
-            student,
-            object,
-        };
+        let info = BorrowInfo { student, object };
 
         borrow_info.push(info);
     }
@@ -98,45 +97,121 @@ fn get_borrowed_items(conn: &mut PooledConn) -> Vec<BorrowInfo> {
 
 pub fn get_view(owner: &mut MainView) -> Column<Message> {
     let settings_button = Button::new(&mut owner.settings_button, Text::new("Asetukset"))
-        .padding([10, 20])
+        .padding([5, 10])
         .on_press(Message::SettingsButtonClick);
 
     let scan_message = Text::new("Skannaa opiskelijan kortti").size(32);
-
-    let first_row: iced::Row<Message> = iced::Row::new()
-        .push(Text::new("Opiskelija").size(18))
-        .push(Space::with_width(Length::Units(120)))
-        .push(Text::new("Työkalu").size(18))
-        .push(Space::with_width(Length::Units(20)))
-        .push(Text::new("Sijainti").size(18))
-        .push(Space::with_height(Length::Units(5)));
-    let mut scroll_content = Column::new().push(first_row);
+    let scan_message_down = Text::new("Tai palauta esine skannamaalla se").size(16);
 
     let borrowed_items = get_borrowed_items(&mut owner.database_pool.get_conn().unwrap());
 
-    for x in borrowed_items {
-        let row: iced::Row<Message> = iced::Row::new()
-            .push(Space::with_width(Length::Units(5)))
-            .push(Text::new(format!("{}, {}, {}", x.student.last_name, x.student.first_name, x.student.group_tag)).size(16))
-            .push(Space::with_width(Length::Units(33)))
-            .push(Text::new(x.object.name).size(16))
-            .push(Space::with_width(Length::Units(33)))
-            .push(Text::new(x.object.location).size(16));
+    let pane = pane_grid::PaneGrid::new(&mut owner.borrow_list_panes, |_id, pane| match pane.id {
+        0 => {
+            let mut content: Column<Message> = Column::new()
+                .spacing(5)
+                .push(
+                    iced::Row::new()
+                        .push(Space::with_width(Length::Units(5)))
+                        .push(Text::new("Tuotteen nimi").size(22)),
+                )
+                .push(TableSpacer::new(1f32, Color::BLACK));
 
-        scroll_content = scroll_content
-            .push(Space::with_height(Length::Units(5)))
-            .push(row);
-    }
+            for borrowed_item in borrowed_items.clone() {
+                content = content
+                    .push(
+                        iced::Row::new()
+                            .push(Space::with_width(Length::Units(2)))
+                            .push(Text::new(borrowed_item.object.name).size(18)),
+                    )
+                    .push(TableSpacer::new(1f32, Color::from_rgb(0.75, 0.75, 0.75)));
+            }
+
+            let container = Container::new(content)
+                .style(style::Theme::Primary)
+                .width(Length::FillPortion(3));
+
+            container.into()
+        }
+
+        1 => {
+            let mut content: Column<Message> = Column::new()
+                .spacing(5)
+                .push(
+                    iced::Row::new()
+                        .push(Space::with_width(Length::Units(5)))
+                        .push(Text::new("Lainaaja").size(22)),
+                )
+                .push(TableSpacer::new(1f32, Color::BLACK));
+
+            for borrowed_item in borrowed_items.clone() {
+                content = content
+                    .push(
+                        iced::Row::new()
+                            .push(Space::with_width(Length::Units(2)))
+                            .push(
+                                Text::new(format!(
+                                    "{}, {}, {}",
+                                    borrowed_item.student.last_name,
+                                    borrowed_item.student.first_name,
+                                    borrowed_item.student.group_tag
+                                ))
+                                .size(18),
+                            ),
+                    )
+                    .push(TableSpacer::new(1f32, Color::from_rgb(0.75, 0.75, 0.75)));
+            }
+
+            let container = Container::new(content)
+                .style(style::Theme::Primary)
+                .width(Length::FillPortion(3));
+
+            container.into()
+        }
+
+        2 => {
+            let mut content: Column<Message> = Column::new()
+                .spacing(5)
+                .push(
+                    iced::Row::new()
+                        .push(Space::with_width(Length::Units(5)))
+                        .push(Text::new("Palautuspaikka").size(22)),
+                )
+                .push(TableSpacer::new(1f32, Color::BLACK));
+
+            for borrowed_item in borrowed_items.clone() {
+                content = content
+                    .push(
+                        iced::Row::new()
+                            .push(Space::with_width(Length::Units(2)))
+                            .push(
+                                Text::new(borrowed_item.object.location)
+                                .size(18),
+                            ),
+                    )
+                    .push(TableSpacer::new(1f32, Color::from_rgb(0.75, 0.75, 0.75)));
+            }
+
+            let container = Container::new(content)
+                .style(style::Theme::Primary)
+                .width(Length::FillPortion(3));
+
+            container.into()
+        }
+
+        _ => pane_grid::Content::new(Text::new("Jotakin meni pieleen")),
+    })
+    .height(Length::Units((borrowed_items.len() * 30) as u16 + 30));
 
     let borrow_list: Scrollable<Message> = Scrollable::new(&mut owner.borrow_list)
-        .push(scroll_content)
+        .push(pane)
         .height(iced::Length::Units(150))
-        .width(iced::Length::Units(350));
+        .width(iced::Length::Units(800));
 
     let content = Column::new()
         .push(Text::new("Työkalujen lainaus järjestelmä").size(16))
         .push(Space::with_height(Length::FillPortion(1)))
         .push(scan_message)
+        .push(scan_message_down)
         .push(Space::with_height(Length::Units(50)))
         .push(borrow_list)
         .push(Space::with_height(Length::Fill))
