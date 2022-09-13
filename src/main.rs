@@ -6,7 +6,10 @@
 //
 //=============================================================================//
 
-use crate::{configuration_file::{write_configuration, MainConfigurationFile}, beep::beep};
+use crate::{
+    beep::beep,
+    configuration_file::{write_configuration, MainConfigurationFile},
+};
 
 mod beep;
 mod configuration_file;

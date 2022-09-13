@@ -127,6 +127,9 @@ pub struct MainView {
     pub student_search_input: text_input::State,
     pub student_search_value: String,
 
+    pub object_search_input: text_input::State,
+    pub object_search_value: String,
+
     //Pick Lists
     pub device_list: pick_list::State<String>,
 
@@ -155,6 +158,7 @@ pub struct MainView {
 
     pub object_list_panes: pane_grid::State<TablePane>,
     pub borrow_list_panes: pane_grid::State<TablePane>,
+    pub borrow_history_panes: pane_grid::State<TablePane>,
 }
 
 #[derive(Debug, Clone)]
@@ -172,6 +176,7 @@ pub enum Message {
     PartNumberChanged(String),
     ManufacturerChanged(String),
     LocationChanged(String),
+    ObjectFilterChanged(String),
     AddStudentViewButton,
     AddStudentButton,
     BackToSettings,
@@ -276,6 +281,21 @@ impl Application for MainView {
             panes
         };
 
+        let borrow_history_panes = {
+            let (mut panes, pane) = pane_grid::State::new(TablePane::new(0));
+            let second_pane = panes
+                .split(pane_grid::Axis::Vertical, &pane, TablePane { id: 1 })
+                .unwrap();
+            panes.split(pane_grid::Axis::Vertical, &pane, TablePane { id: 2 });
+            panes.split(
+                pane_grid::Axis::Vertical,
+                &second_pane.0,
+                TablePane { id: 3 },
+            );
+
+            panes
+        };
+
         (
             MainView {
                 initialized: false,
@@ -326,6 +346,9 @@ impl Application for MainView {
                 location_value: String::default(),
                 object_list_panes,
                 borrow_list_panes,
+                borrow_history_panes,
+                object_search_input: text_input::State::default(),
+                object_search_value: String::default(),
             },
             Command::none(),
         )
@@ -400,6 +423,9 @@ impl Application for MainView {
             self.initialized = true;
         }
         match message {
+            Message::ObjectFilterChanged(val) => {
+                self.object_search_value = val;
+            }
             Message::LocationChanged(val) => {
                 self.location_value = val;
             }
@@ -421,6 +447,7 @@ impl Application for MainView {
             Message::HistoryButtonClick => {
                 self.menu_state = MenuState::BorrowHistory;
                 self.student_search_value = "".to_string();
+                self.object_search_value = "".to_string();
             }
             Message::RemoveObjectButton => {
                 let mut conn = self.database_pool.get_conn().unwrap();
