@@ -7,7 +7,7 @@
 
 use crate::widgets::spacer::TableSpacer;
 use crate::widgets::style;
-use iced::{pane_grid, Button, Color, Column, Container, Length, Scrollable, Space, Text};
+use iced::{pane_grid, Button, Color, Column, Container, Length, Scrollable, Space, Text, Svg};
 use mysql::prelude::*;
 use mysql::*;
 
@@ -96,7 +96,14 @@ fn get_borrowed_items(conn: &mut PooledConn) -> Vec<BorrowInfo> {
 }
 
 pub fn get_view(owner: &mut MainView) -> Column<Message> {
-    let settings_button = Button::new(&mut owner.settings_button, Text::new("Asetukset"))
+    let gear_svg = Svg::from_path(format!(
+        "{}/resources/gear.svg",
+        env!("CARGO_MANIFEST_DIR")
+    ))
+    .width(Length::Units(10))
+    .height(Length::Units(10));
+
+    let settings_button = Button::new(&mut owner.settings_button, gear_svg)
         .padding([5, 10])
         .on_press(Message::SettingsButtonClick);
 
@@ -205,7 +212,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
         .width(iced::Length::Units(800));
 
     let content = Column::new()
-        .push(Text::new("Työkalujen lainaus järjestelmä").size(16))
+        .push(Text::new("Työkalujen lainausjärjestelmä").size(16))
         .push(Space::with_height(Length::FillPortion(1)))
         .push(scan_message)
         .push(scan_message_down)

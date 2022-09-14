@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-iced = { version = "0.4.2", features = ["tokio"] }
+iced = { version = "0.4.2", features = ["tokio", "svg"] }
 iced_native = "0.5.1"
 serialport = "4.2.0"
 mysql = "22.2.0"
