@@ -90,6 +90,19 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
         }
     }
 
+    let mut found_admin = false;
+
+    for s in get_students(&mut conn) {
+        if s.admin {
+            found_admin = true;
+            break;
+        }
+    }
+
+    if !found_admin {
+        show_settings = true;
+    }
+
     if !show_settings && owner.selected_device.is_some() {
         let settings_button =
             Button::new(&mut owner.settings_button, Text::new("Poistu asetuksista"))
