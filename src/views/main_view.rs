@@ -98,7 +98,7 @@ fn get_borrowed_items(conn: &mut PooledConn) -> Vec<BorrowInfo> {
 pub fn get_view(owner: &mut MainView) -> Column<Message> {
     let gear_svg = Svg::from_path(format!(
         "{}/resources/gear.svg",
-        env!("CARGO_MANIFEST_DIR")
+        std::env::current_dir().unwrap().display()
     ))
     .width(Length::Units(10))
     .height(Length::Units(10));

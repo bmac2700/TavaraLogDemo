@@ -806,6 +806,23 @@ impl Application for MainView {
             .width(Length::Fill)
             .height(Length::Fill)
             .center_x()
+            .style(style::Container)
             .into()
     }
+}
+
+mod style {
+    use iced::{Color, container};
+
+    pub struct Container;
+
+        impl container::StyleSheet for Container {
+            fn style(&self) -> container::Style {
+                container::Style {
+                    background: Color::from_rgb8(0xcc, 0xcc, 0xcc).into(),
+                    text_color: Color::BLACK.into(),
+                    ..container::Style::default()
+                }
+            }
+        }
 }
