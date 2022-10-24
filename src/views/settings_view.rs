@@ -5,6 +5,7 @@
 //
 //=============================================================================//
 
+use crate::string_check;
 use crate::widgets::spacer::TableSpacer;
 use iced::{
     pane_grid, Alignment, Button, Color, Column, Container, Length, PickList, Scrollable, Space,
@@ -228,7 +229,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
                     .push(
                         iced::Row::new()
                             .push(Space::with_width(Length::Units(2)))
-                            .push(Text::new(object.name).size(18)),
+                            .push(Text::new(string_check(object.name)).size(18)),
                     )
                     .push(TableSpacer::new(1f32, Color::from_rgb(0.75, 0.75, 0.75)));
             }
@@ -255,7 +256,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
                     .push(
                         iced::Row::new()
                             .push(Space::with_width(Length::Units(2)))
-                            .push(Text::new(object.manufacturer).size(18)),
+                            .push(Text::new(string_check(object.manufacturer)).size(18)),
                     )
                     .push(TableSpacer::new(1f32, Color::from_rgb(0.75, 0.75, 0.75)));
             }
@@ -282,7 +283,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
                     .push(
                         iced::Row::new()
                             .push(Space::with_width(Length::Units(2)))
-                            .push(Text::new(object.part_number).size(18)),
+                            .push(Text::new(string_check(object.part_number)).size(18)),
                     )
                     .push(TableSpacer::new(1f32, Color::from_rgb(0.75, 0.75, 0.75)));
             }
@@ -309,7 +310,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
                     .push(
                         iced::Row::new()
                             .push(Space::with_width(Length::Units(2)))
-                            .push(Text::new(object.location).size(18)),
+                            .push(Text::new(string_check(object.location)).size(18)),
                     )
                     .push(TableSpacer::new(1f32, Color::from_rgb(0.75, 0.75, 0.75)));
             }

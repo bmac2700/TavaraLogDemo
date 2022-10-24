@@ -72,7 +72,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
             && !object
                 .name
                 .to_lowercase()
-                .starts_with(&owner.object_search_value)
+                .starts_with(&owner.object_search_value.to_lowercase())
         {
             return false;
         }

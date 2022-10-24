@@ -18,6 +18,12 @@ mod scanner;
 mod views;
 mod widgets;
 
+pub fn string_check(x: String) -> String {
+    if x.len() == 0 {
+        return " ".into();
+    }
+    x
+}
 fn main() {
     beep(0.0, std::time::Duration::from_millis(0));
     if let Err(_) = configuration_file::read_configuration("./config.toml") {

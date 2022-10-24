@@ -5,7 +5,7 @@
 //
 //=============================================================================//
 
-use crate::widgets::spacer::TableSpacer;
+use crate::{widgets::spacer::TableSpacer, string_check};
 use crate::widgets::style;
 use iced::{pane_grid, Button, Color, Column, Container, Length, Scrollable, Space, Text, Svg};
 use mysql::prelude::*;
@@ -128,7 +128,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
                     .push(
                         iced::Row::new()
                             .push(Space::with_width(Length::Units(2)))
-                            .push(Text::new(borrowed_item.object.name).size(18)),
+                            .push(Text::new(string_check(borrowed_item.object.name)).size(18)),
                     )
                     .push(TableSpacer::new(1f32, Color::from_rgb(0.75, 0.75, 0.75)));
             }
@@ -156,12 +156,12 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
                         iced::Row::new()
                             .push(Space::with_width(Length::Units(2)))
                             .push(
-                                Text::new(format!(
+                                Text::new(string_check(format!(
                                     "{}, {}, {}",
                                     borrowed_item.student.last_name,
                                     borrowed_item.student.first_name,
                                     borrowed_item.student.group_tag
-                                ))
+                                )))
                                 .size(18),
                             ),
                     )
@@ -190,7 +190,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
                     .push(
                         iced::Row::new()
                             .push(Space::with_width(Length::Units(2)))
-                            .push(Text::new(borrowed_item.object.location).size(18)),
+                            .push(Text::new(string_check(borrowed_item.object.location)).size(18)),
                     )
                     .push(TableSpacer::new(1f32, Color::from_rgb(0.75, 0.75, 0.75)));
             }
