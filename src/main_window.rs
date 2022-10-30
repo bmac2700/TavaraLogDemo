@@ -162,6 +162,7 @@ pub struct MainView {
     pub object_list_panes: pane_grid::State<TablePane>,
     pub borrow_list_panes: pane_grid::State<TablePane>,
     pub borrow_history_panes: pane_grid::State<TablePane>,
+    pub student_list_panes: pane_grid::State<TablePane>,
 }
 
 #[derive(Debug, Clone)]
@@ -300,6 +301,21 @@ impl Application for MainView {
             panes
         };
 
+        let student_list_panes = {
+            let (mut panes, pane) = pane_grid::State::new(TablePane::new(0));
+            let second_pane = panes
+                .split(pane_grid::Axis::Vertical, &pane, TablePane { id: 1 })
+                .unwrap();
+            panes.split(pane_grid::Axis::Vertical, &pane, TablePane { id: 2 });
+            panes.split(
+                pane_grid::Axis::Vertical,
+                &second_pane.0,
+                TablePane { id: 3 },
+            );
+
+            panes
+        };
+
         (
             MainView {
                 initialized: false,
@@ -355,6 +371,7 @@ impl Application for MainView {
                 object_search_value: String::default(),
                 group_tag_search: text_input::State::default(),
                 group_tag_search_value: String::default(),
+                student_list_panes,
             },
             Command::none(),
         )
@@ -821,17 +838,17 @@ impl Application for MainView {
 }
 
 mod style {
-    use iced::{Color, container};
+    use iced::{container, Color};
 
     pub struct Container;
 
-        impl container::StyleSheet for Container {
-            fn style(&self) -> container::Style {
-                container::Style {
-                    background: Color::from_rgb8(0xcc, 0xcc, 0xcc).into(),
-                    text_color: Color::BLACK.into(),
-                    ..container::Style::default()
-                }
+    impl container::StyleSheet for Container {
+        fn style(&self) -> container::Style {
+            container::Style {
+                background: Color::from_rgb8(0xcc, 0xcc, 0xcc).into(),
+                text_color: Color::BLACK.into(),
+                ..container::Style::default()
             }
         }
+    }
 }

@@ -5,9 +5,9 @@
 //
 //=============================================================================//
 
-use crate::{widgets::spacer::TableSpacer, string_check};
 use crate::widgets::style;
-use iced::{pane_grid, Button, Color, Column, Container, Length, Scrollable, Space, Text, Svg};
+use crate::{string_check, widgets::spacer::TableSpacer};
+use iced::{pane_grid, Button, Color, Column, Container, Length, Scrollable, Space, Svg, Text};
 use mysql::prelude::*;
 use mysql::*;
 

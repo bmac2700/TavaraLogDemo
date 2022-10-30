@@ -155,7 +155,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
             .padding([10, 20])
             .on_press(Message::AddObjectViewButton);
 
-    let students = get_students(&mut owner.database_pool.get_conn().unwrap());
+    let mut students = get_students(&mut owner.database_pool.get_conn().unwrap());
     let objects = get_objects(&mut owner.database_pool.get_conn().unwrap());
 
     let student_search_input = TextInput::new(
@@ -168,7 +168,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
     .size(28)
     .width(iced::Length::Units(100));
 
-    let group_search_input = TextInput::new(
+    let student_group_search_input = TextInput::new(
         &mut owner.group_tag_search,
         "Ryhmä",
         &owner.group_tag_search_value,
@@ -178,24 +178,23 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
     .size(28)
     .width(iced::Length::Units(100));
 
-    let first_row_students: iced::Row<Message> = iced::Row::new()
-        .push(Text::new("ID").size(28))
-        .push(Space::with_width(Length::FillPortion(3)))
+    let filter_row = iced::Row::new()
+        .push(Text::new(""))
+        .push(Space::with_width(Length::FillPortion(4)))
         .push(student_search_input)
-        .push(Space::with_width(Length::FillPortion(3)))
-        .push(group_search_input)
-        .push(Space::with_width(Length::FillPortion(3)))
-        .push(Text::new("Opettaja"))
-        .push(Space::with_height(Length::Units(5)));
-    let mut scroll_content_students = Column::new().push(first_row_students);
+        .push(Space::with_width(Length::FillPortion(4)))
+        .push(student_group_search_input)
+        .push(Space::with_width(Length::FillPortion(4)))
+        .push(Text::new("").size(22))
+        .width(iced::Length::Units(1000));
 
-    for student in students {
+    students.retain(|student| {
         if !owner.student_search_value.is_empty()
-            && !format!("{} {}", student.first_name, student.last_name)
+            && !format!("{} {}", student.last_name, student.first_name)
                 .to_lowercase()
                 .starts_with(&owner.student_search_value.to_lowercase())
         {
-            continue;
+            return false;
         }
 
         if !owner.group_tag_search_value.is_empty()
@@ -203,36 +202,145 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
                 .to_lowercase()
                 .starts_with(&owner.group_tag_search_value.to_lowercase())
         {
-            continue;
+            return false;
         }
 
-        let teacher = if student.admin {
-            Text::new("Kyllä")
-        } else {
-            Text::new("Ei")
-        };
+        true
+    });
 
-        let row: iced::Row<Message> = iced::Row::new()
-            .push(Text::new(format!("{}", student.id)))
-            .push(Space::with_width(Length::FillPortion(3)))
-            .push(Text::new(format!(
-                "{} {}",
-                student.first_name, student.last_name
-            )))
-            .push(Space::with_width(Length::FillPortion(3)))
-            .push(Text::new(format!("{}", student.group_tag)))
-            .push(Space::with_width(Length::FillPortion(3)))
-            .push(teacher);
+    let student_list_panes =
+        pane_grid::PaneGrid::new(&mut owner.student_list_panes, |_id, pane| match pane.id {
+            0 => {
+                let mut content: Column<Message> = Column::new()
+                    .spacing(5)
+                    .push(
+                        iced::Row::new()
+                            .push(Space::with_width(Length::Units(5)))
+                            .push(Text::new("ID").size(22)),
+                    )
+                    .push(TableSpacer::new(1f32, Color::BLACK));
 
-        scroll_content_students = scroll_content_students
-            .push(Space::with_height(Length::Units(5)))
-            .push(row);
-    }
+                for student in students.clone() {
+                    content = content
+                        .push(
+                            iced::Row::new()
+                                .push(Space::with_width(Length::Units(2)))
+                                .push(Text::new(string_check(format!("{}", student.id))).size(18)),
+                        )
+                        .push(TableSpacer::new(1f32, Color::from_rgb(0.75, 0.75, 0.75)));
+                }
+
+                let container = Container::new(content)
+                    .style(style::Theme::Primary)
+                    .width(Length::FillPortion(4));
+
+                container.into()
+            }
+
+            2 => {
+                let mut content: Column<Message> = Column::new()
+                    .spacing(5)
+                    .push(
+                        iced::Row::new()
+                            .push(Space::with_width(Length::Units(5)))
+                            .push(Text::new("Opiskelija").size(22)),
+                    )
+                    .push(TableSpacer::new(1f32, Color::BLACK));
+
+                for student in students.clone() {
+                    content = content
+                        .push(
+                            iced::Row::new()
+                                .push(Space::with_width(Length::Units(2)))
+                                .push(
+                                    Text::new(string_check(format!(
+                                        "{}, {}",
+                                        student.last_name, student.first_name
+                                    )))
+                                    .size(18),
+                                ),
+                        )
+                        .push(TableSpacer::new(1f32, Color::from_rgb(0.75, 0.75, 0.75)));
+                }
+
+                let container = Container::new(content)
+                    .style(style::Theme::Primary)
+                    .width(Length::FillPortion(4));
+
+                container.into()
+            }
+
+            3 => {
+                let mut content: Column<Message> = Column::new()
+                    .spacing(5)
+                    .push(
+                        iced::Row::new()
+                            .push(Space::with_width(Length::Units(5)))
+                            .push(Text::new("Opettaja").size(22)),
+                    )
+                    .push(TableSpacer::new(1f32, Color::BLACK));
+
+                for student in students.clone() {
+                    let opettaja: String = if student.admin {
+                        "Kyllä".into()
+                    } else {
+                        "Ei".into()
+                    };
+
+                    content = content
+                        .push(
+                            iced::Row::new()
+                                .push(Space::with_width(Length::Units(2)))
+                                .push(Text::new(string_check(format!("{}", opettaja))).size(18)),
+                        )
+                        .push(TableSpacer::new(1f32, Color::from_rgb(0.75, 0.75, 0.75)));
+                }
+
+                let container = Container::new(content)
+                    .style(style::Theme::Primary)
+                    .width(Length::FillPortion(4));
+
+                container.into()
+            }
+
+            1 => {
+                let mut content: Column<Message> = Column::new()
+                    .spacing(5)
+                    .push(
+                        iced::Row::new()
+                            .push(Space::with_width(Length::Units(5)))
+                            .push(Text::new("Ryhmä").size(22)),
+                    )
+                    .push(TableSpacer::new(1f32, Color::BLACK));
+
+                for student in students.clone() {
+                    content = content
+                        .push(
+                            iced::Row::new()
+                                .push(Space::with_width(Length::Units(2)))
+                                .push(
+                                    Text::new(string_check(format!("{}", student.group_tag)))
+                                        .size(18),
+                                ),
+                        )
+                        .push(TableSpacer::new(1f32, Color::from_rgb(0.75, 0.75, 0.75)));
+                }
+
+                let container = Container::new(content)
+                    .style(style::Theme::Primary)
+                    .width(Length::FillPortion(4));
+
+                container.into()
+            }
+
+            _ => pane_grid::Content::new(Text::new("Jotakin meni pieleen")),
+        })
+        .height(Length::Units((students.len() * 30) as u16 + 30));
 
     let student_list: Scrollable<Message> = Scrollable::new(&mut owner.student_list)
-        .push(scroll_content_students)
-        .height(iced::Length::Units(100))
-        .width(iced::Length::Units(500));
+        .push(student_list_panes)
+        .height(iced::Length::Units(150))
+        .width(iced::Length::Units(1000));
     //-------------------------------------------
 
     let pane = pane_grid::PaneGrid::new(&mut owner.object_list_panes, |_id, pane| match pane.id {
@@ -242,7 +350,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
                 .push(
                     iced::Row::new()
                         .push(Space::with_width(Length::Units(5)))
-                        .push(Text::new("Tuotteen nimi").size(22)),
+                        .push(Text::new("ID, Tuotteen nimi").size(22)),
                 )
                 .push(TableSpacer::new(1f32, Color::BLACK));
 
@@ -251,7 +359,7 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
                     .push(
                         iced::Row::new()
                             .push(Space::with_width(Length::Units(2)))
-                            .push(Text::new(string_check(object.name)).size(18)),
+                            .push(Text::new(format!("{}, {}", object.id, string_check(object.name))).size(18)),
                     )
                     .push(TableSpacer::new(1f32, Color::from_rgb(0.75, 0.75, 0.75)));
             }
@@ -381,6 +489,8 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
         .push(Space::with_width(Length::FillPortion(1)))
         .push(device_list)
         .push(Space::with_height(Length::FillPortion(3)))
+        .push(Text::new("Suodattimet"))
+        .push(filter_row)
         .push(student_list)
         .push(Space::with_height(Length::Units(5)))
         .push(add_student_view_button)
