@@ -106,6 +106,9 @@ pub struct MainView {
     pub group_tag_input: text_input::State,
     pub group_tag_value: String,
 
+    pub group_tag_search: text_input::State,
+    pub group_tag_search_value: String,
+
     pub part_number_input: text_input::State,
     pub part_number_value: String,
 
@@ -188,6 +191,7 @@ pub enum Message {
     RemoveObjectButton,
     HistoryButtonClick,
     StudentSearchChanged(String),
+    GroupTagSearchChanged(String),
     ToggleAdmin(bool),
 }
 
@@ -349,6 +353,8 @@ impl Application for MainView {
                 borrow_history_panes,
                 object_search_input: text_input::State::default(),
                 object_search_value: String::default(),
+                group_tag_search: text_input::State::default(),
+                group_tag_search_value: String::default(),
             },
             Command::none(),
         )
@@ -423,6 +429,9 @@ impl Application for MainView {
             self.initialized = true;
         }
         match message {
+            Message::GroupTagSearchChanged(val) => {
+                self.group_tag_search_value = val;
+            }
             Message::ObjectFilterChanged(val) => {
                 self.object_search_value = val;
             }

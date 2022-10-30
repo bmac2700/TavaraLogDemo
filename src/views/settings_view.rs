@@ -168,10 +168,22 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
     .size(28)
     .width(iced::Length::Units(100));
 
+    let group_search_input = TextInput::new(
+        &mut owner.group_tag_search,
+        "Ryhmä",
+        &owner.group_tag_search_value,
+        Message::GroupTagSearchChanged,
+    )
+    //.padding(15)
+    .size(28)
+    .width(iced::Length::Units(100));
+
     let first_row_students: iced::Row<Message> = iced::Row::new()
         .push(Text::new("ID").size(28))
         .push(Space::with_width(Length::FillPortion(3)))
         .push(student_search_input)
+        .push(Space::with_width(Length::FillPortion(3)))
+        .push(group_search_input)
         .push(Space::with_width(Length::FillPortion(3)))
         .push(Text::new("Opettaja"))
         .push(Space::with_height(Length::Units(5)));
@@ -182,6 +194,14 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
             && !format!("{} {}", student.first_name, student.last_name)
                 .to_lowercase()
                 .starts_with(&owner.student_search_value.to_lowercase())
+        {
+            continue;
+        }
+
+        if !owner.group_tag_search_value.is_empty()
+            && !format!("{}", student.group_tag)
+                .to_lowercase()
+                .starts_with(&owner.group_tag_search_value.to_lowercase())
         {
             continue;
         }
@@ -199,6 +219,8 @@ pub fn get_view(owner: &mut MainView) -> Column<Message> {
                 "{} {}",
                 student.first_name, student.last_name
             )))
+            .push(Space::with_width(Length::FillPortion(3)))
+            .push(Text::new(format!("{}", student.group_tag)))
             .push(Space::with_width(Length::FillPortion(3)))
             .push(teacher);
 
